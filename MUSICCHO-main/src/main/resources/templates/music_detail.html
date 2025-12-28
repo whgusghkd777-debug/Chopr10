@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${music.title + ' - CreatorShare'}"></title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f8f9fa; }
+        header { padding: 15px; background: #343a40; color: white; margin-bottom: 30px; }
+        header a { color: white; margin: 0 10px; text-decoration: none; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        iframe { width: 100%; height: 500px; border: none; border-radius: 8px; }
+        .info { margin: 20px 0; line-height: 1.8; }
+        .comments { margin-top: 40px; }
+        .comment { padding: 10px; border-bottom: 1px solid #eee; }
+        .back-btn { display: inline-block; margin-top: 30px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div sec:authorize="isAuthenticated()">
+            <span sec:authentication="name"></span>さん ようこそ!
+            <a th:href="@{/logout}">ログアウト</a>
+            <span sec:authorize="hasRole('ADMIN')">
+                | <a href="/admin">管理者ページ</a>
+            </span>
+        </div>
+        <div sec:authorize="isAnonymous()">
+            <a th:href="@{/user/login}">ログイン</a> | <a th:href="@{/user/signup}">会員登録</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 th:text="${music.title}"></h1>
+
+        <div class="info">
+            <p>アーティスト: <strong th:text="${music.artist}"></strong></p>
+            <p>投稿日: <span th:text="${#temporals.format(music.createDate, 'yyyy年MM月dd日 HH:mm')}"></span></p>
+            <!-- 좋아요 수 수정: voter.size() 사용 (진짜 값 나옴) -->
+            <p>いいね: <strong th:text="${music.voter != null ? music.voter.size() : 0}"></strong></p>
+            <p>コメント数: <strong th:text="${music.answerList != null ? music.answerList.size() : 0}"></strong></p>
+        </div>
+
+        
+        <iframe th:src="${embedUrl}"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+
+        
+        <div class="comments">
+            <h2>コメント (<span th:text="${music.answerList != null ? music.answerList.size() : 0}"></span>件)</h2>
+            
+            <div th:if="${music.answerList == null or #lists.isEmpty(music.answerList)}">
+                <p>まだコメントがありません。</p>
+            </div>
+            
+            <div th:each="answer : ${music.answerList}" class="comment">
+                <strong th:text="${answer.author != null ? answer.author.username : '匿名'}"></strong>さん:
+                <span th:text="${#temporals.format(answer.createDate, 'yyyy/MM/dd HH:mm')}"></span><br>
+                <p th:text="${answer.content}"></p>
+            </div>
+        </div>
+
+        
+        <a th:href="@{/music}" class="back-btn">一覧に戻る</a>
+    </div>
+
+</body>
+</html>

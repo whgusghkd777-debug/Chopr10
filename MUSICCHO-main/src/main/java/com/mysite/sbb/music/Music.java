@@ -1,0 +1,47 @@
+package com.mysite.sbb.music;
+
+import com.mysite.sbb.answer.Answer;
+import com.mysite.sbb.user.SiteUser;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+
+@Getter
+@Setter
+@Entity
+public class Music {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(length = 200)
+    private String title;
+
+    @Column(length = 100)
+    private String artist;
+
+    @Column(columnDefinition = "TEXT")
+    private String url;
+
+    @Column(columnDefinition = "TEXT")
+    private String content; // 사진 에러 해결용 필드
+
+    private String category; // 사진 에러 해결용 필드
+
+    @Column(nullable = false)
+    private Integer likes = 0; // DB의 Not Null 제약조건 해결용
+
+    private LocalDateTime createDate;
+
+    @ManyToOne
+    private SiteUser author;
+
+    @OneToMany(mappedBy = "music", cascade = CascadeType.REMOVE)
+    private List<Answer> answerList;
+
+    @ManyToMany
+    private Set<SiteUser> voter;
+}

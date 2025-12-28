@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>会員登録 - CreatorShare</title>
+    <style>
+        /* 로그인 페이지와 스타일 동일하게 적용 */
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .signup-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 400px; }
+        input { width: 100%; padding: 10px; border: 1px solid #d2d2d7; border-radius: 8px; box-sizing: border-box; margin-top: 5px; }
+        button { width: 100%; padding: 12px; background: #34c759; color: white; border: none; border-radius: 10px; margin-top: 20px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="signup-box">
+        <h2 style="text-align:center;">新規会員登録</h2>
+        <form th:action="@{/user/signup}" th:object="${userCreateForm}" method="post">
+            <div th:if="${#fields.hasAnyErrors()}" style="color: #ff3b30; font-size: 13px; margin-bottom: 15px;">
+                <p th:each="err : ${#fields.allErrors()}" th:text="${err}"></p>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>ユーザー名</label>
+                <input type="text" th:field="*{username}">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>メールアドレス</label>
+                <input type="email" th:field="*{email}">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>パスワード</label>
+                <input type="password" th:field="*{password}">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>パスワード（確認）</label>
+                <input type="password" th:field="*{passwordConfirm}">
+            </div>
+            <button type="submit">登録する</button>
+        </form>
+    </div>
+</body>
+</html>
