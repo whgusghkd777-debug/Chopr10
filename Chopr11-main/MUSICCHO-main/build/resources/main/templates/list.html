@@ -1,16 +1,33 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>음악 목록</title></head>
+<head>
+    <meta charset="UTF-8">
+    <title>音楽一覧</title>
+</head>
 <body>
-    <h1>음악 목록</h1>
-    <div th:if="${musicList == null or musicList.isEmpty()}">데이터 없음</div>
-    <table th:unless="${musicList == null or musicList.isEmpty()}">
-        <tr><th>제목</th><th>아티스트</th><th>카테고리</th></tr>
-        <tr th:each="m : ${musicList}">
-            <td th:text="${m.title}"></td>
-            <td th:text="${m.artist}"></td>
-            <td th:text="${m.category}"></td>
-        </tr>
+    <h1>音楽一覧</h1>
+    
+    <div th:if="${musicList == null or #lists.isEmpty(musicList)}">
+        登録された音楽がありません。
+    </div>
+    
+    <table th:unless="${musicList == null or #lists.isEmpty(musicList)}">
+        <thead>
+            <tr>
+                <th>タイトル</th>
+                <th>アーティスト</th>
+                <th>カテゴリ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="music : ${musicList}">
+                <td th:text="${music.title}">タイトル</td>
+                <td th:text="${music.artist}">アーティスト</td>
+                <td th:text="${music.category}">カテゴリ</td>
+            </tr>
+        </tbody>
     </table>
+    
+    <a href="/music/create">新しい音楽を登録</a>
 </body>
 </html>

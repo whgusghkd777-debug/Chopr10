@@ -15,12 +15,7 @@ public class MusicController {
 
     @GetMapping("/list")
     public String list(Model model) {
-        try {
-            model.addAttribute("musicList", musicService.getList());
-            return "music/list";
-        } catch (Exception e) {
-            model.addAttribute("error", "데이터 로드 실패: " + e.getMessage());
-            return "error";  // templates/error.html 만들어 간단히 표시
-        }
+        model.addAttribute("musicList", musicService.getList());
+        return "music/list";  // ← 여기 꼭 "music/list" (templates/music/list.html 찾음)
     }
 }
