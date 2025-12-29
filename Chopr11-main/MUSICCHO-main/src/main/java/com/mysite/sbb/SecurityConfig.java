@@ -21,7 +21,6 @@ public class SecurityConfig {
             .authorizeHttpRequests((auth) -> auth
                 .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/images/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
             .csrf((csrf) -> csrf.disable())
             .formLogin((form) -> form
@@ -29,7 +28,7 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/music/list")
                 .permitAll())
             .logout((logout) -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout")) // HTML과 일치시킴
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout")) // [修正] 경로 단순화
                 .logoutSuccessUrl("/music/list")
                 .invalidateHttpSession(true))
         ;

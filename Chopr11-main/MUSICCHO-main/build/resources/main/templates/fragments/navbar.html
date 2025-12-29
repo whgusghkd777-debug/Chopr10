@@ -3,12 +3,8 @@
         <div class="logo" th:onclick="|location.href='@{/music/list}'|">Music Cho</div>
         <div class="nav-right">
             <div class="user-info">
-                <button sec:authorize="hasRole('ADMIN')" id="adminBtn" onclick="toggleAdminMode()">⚙️ 管理者</button>
-
                 <span sec:authorize="isAuthenticated()" th:text="${#authentication.name} + ' 様'"></span>
-                
                 <a sec:authorize="isAnonymous()" th:href="@{/user/login}">ログイン</a>
-                
                 <a sec:authorize="isAuthenticated()" th:href="@{/logout}">ログアウト</a>
             </div>
         </div>
