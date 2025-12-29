@@ -26,29 +26,20 @@ public class MusicController {
         return "music/list";
     }
 
-    // [중요] 상세 페이지는 @ResponseBody를 절대 쓰지 않음
-    @GetMapping("/music/detail/{id}")
-    public String detail(@PathVariable("id") Integer id, Model model) {
-        Music music = musicService.getMusic(id);
-        model.addAttribute("music", music);
-        model.addAttribute("embedUrl", convertToEmbedUrl(music.getUrl()));
-        return "music/detail_fragment"; 
-    }
-
     @GetMapping("/music/listJson")
     @ResponseBody
     public List<Music> listJson() {
         return musicService.getList();
     }
 
-    private String convertToEmbedUrl(String url) {
-        if (url == null || url.isEmpty()) return "";
-        String videoId = "";
-        String regex = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*";
-        Pattern compiledPattern = Pattern.compile(regex);
-        Matcher matcher = compiledPattern.matcher(url);
-        if (matcher.find()) videoId = matcher.group();
-        return "https://www.youtube.com/embed/" + videoId;
+    // [修正] 重複を削除し、embedUrlの処理を含めた唯一のdetailメソッド
+    @GetMapping("/music/detail/{id}")
+    public String detail(@PathVariable("id") Integer id, Model model) {
+        Music music = musicService.getMusic(id);
+        model.addAttribute("music", music);
+        // YouTubeのURLを再生可能なembed形式に変換して渡す
+        model.addAttribute("embedUrl", convertToEmbedUrl(music.getUrl()));
+        return "music/detail_fragment"; 
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -60,6 +51,18 @@ public class MusicController {
         musicService.like(music, user);
         Map<String, Object> res = new HashMap<>();
         res.put("likes", music.getLikers().size());
+        // [追加] クライアント側で状態を確認できるよう現在のユーザーが「いいね」したか返す
+        res.put("isLiked", music.getLikers().contains(user));
         return res;
+    }
+
+    private String convertToEmbedUrl(String url) {
+        if (url == null || url.isEmpty()) return "";
+        String videoId = "";
+        String regex = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*";
+        Pattern compiledPattern = Pattern.compile(regex);
+        Matcher matcher = compiledPattern.matcher(url);
+        if (matcher.find()) videoId = matcher.group();
+        return "https://www.youtube.com/embed/" + videoId;
     }
 }
