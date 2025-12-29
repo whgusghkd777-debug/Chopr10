@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新規登録 - CreatorShare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="signup-card">
+    <h2>新規登録</h2>
+    <form th:action="@{/user/signup}" method="post">
+        <div class="form-group">
+            <label>ユーザー名</label>
+            <input type="text" name="username" required>
+        </div>
+        <div class="form-group">
+            <label>メールアドレス</label>
+            <input type="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label>パスワード</label>
+            <input type="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label>パスワード(確認)</label>
+            <input type="password" name="passwordConfirm" required>
+        </div>
+        <div th:if="${error}" class="error-msg" th:text="${error}"></div>
+        <button type="submit">アカウント作成</button>
+    </form>
+    <div class="footer-link">
+        既にアカウントをお持ちですか？ <a th:href="@{/user/login}">ログイン</a>
+    </div>
+</div>
+</body>
+</html>

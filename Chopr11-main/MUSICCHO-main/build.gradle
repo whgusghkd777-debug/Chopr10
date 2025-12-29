@@ -1,0 +1,45 @@
+plugins {
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.5'
+    id 'java'
+}
+
+group = 'com.mysite'
+version = '0.0.1-SNAPSHOT'
+java {
+    sourceCompatibility = '21'  // 만약 Java 21 쓰고 있으면 21로 바꾸세요
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // 이 줄이 없으면 @Controller, @PostMapping 등을 못 찾습니다!!!
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.h2database:h2'
+    // runtimeOnly 'com.mysql:mysql-connector-j'
+  // 버전 번호를 정확히 명시해야 에러가 나지 않습니다.
+implementation 'org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    
+    runtimeOnly 'com.h2database:h2'                  // 로컬 빠른 테스트용 (그대로 둬)
+    runtimeOnly 'org.postgresql:postgresql'          // ★ 이 줄 추가! PostgreSQL 연결용 ★
+    
+    // 나중에 MySQL 쓰고 싶으면 이거 풀어도 됨
+    // runtimeOnly 'com.mysql:mysql-connector-j'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
