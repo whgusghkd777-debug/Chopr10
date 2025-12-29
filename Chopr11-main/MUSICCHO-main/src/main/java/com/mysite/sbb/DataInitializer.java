@@ -27,7 +27,7 @@ public class DataInitializer implements CommandLineRunner {
                 return;
             }
 
-            // 2. 음악 데이터 샘플 생성
+            
             musicService.create(
                 "Sample Song",
                 "Sample Artist",

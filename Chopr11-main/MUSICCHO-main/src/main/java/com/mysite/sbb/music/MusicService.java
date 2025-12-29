@@ -25,20 +25,29 @@ public class MusicService {
         return music.orElseThrow(() -> new DataNotFoundException("Music not found"));
     }
 
+    // [修正] DataInitializer가 요구하는 6개 인자 형식에 맞춤
+    public Music create(String title, String artist, String content, String url, String category, SiteUser user) {
+        Music music = new Music();
+        music.setTitle(title);
+        music.setArtist(artist);
+        music.setContent(content);
+        music.setUrl(url);
+        music.setCategory(category);
+        music.setAuthor(user);
+        music.setCreateDate(LocalDateTime.now());
+        music.setLikes(0);
+        music.setLikers(new HashSet<>());
+        return this.musicRepository.save(music);
+    }
+
     public void like(Music music, SiteUser user) {
         Set<SiteUser> likers = music.getLikers();
-        if (likers == null) {
-            likers = new HashSet<>();
-            music.setLikers(likers);
-        }
-
         if (likers.contains(user)) {
             likers.remove(user);
         } else {
             likers.add(user);
         }
-        // 실무 팁: likes 필드는 likers.size()로 동기화하는 것이 가장 정확함
         music.setLikes(likers.size());
-        musicRepository.save(music);
+        this.musicRepository.save(music);
     }
 }
