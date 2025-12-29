@@ -1,13 +1,10 @@
 package com.mysite.sbb.music;
 
-import com.mysite.sbb.music.dto.MusicListDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/music")
@@ -18,8 +15,12 @@ public class MusicController {
 
     @GetMapping("/list")
     public String list(Model model) {
-        List<MusicListDto> musicList = musicService.getList();
-        model.addAttribute("musicList", musicList);
-        return "music/list"; // templates/music/list.html 반환
+        try {
+            model.addAttribute("musicList", musicService.getList());
+            return "music/list";
+        } catch (Exception e) {
+            model.addAttribute("error", "데이터 로드 실패: " + e.getMessage());
+            return "error";  // templates/error.html 만들어 간단히 표시
+        }
     }
 }

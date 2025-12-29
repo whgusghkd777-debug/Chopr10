@@ -15,22 +15,28 @@ public class DataInitializer implements CommandLineRunner {
     private final UserService userService;
 
     @Override
-    public void run(String... args) throws Exception {
-        // 1. 관리자 유저 생성
-        SiteUser admin = userService.getUser("admin");
-        if (admin == null) {
-            admin = userService.create("admin", "admin@test.com", "1234");
-        }
+    public void run(String... args) {
+        try {
+            SiteUser admin = userService.getUser("admin");
+            if (admin == null) {
+                admin = userService.create("admin", "admin@test.com", "1234");
+            }
 
-        // 2. 초기 데이터 생성
-        // MusicService.create()의 파라미터 순서: 제목, 가수, URL, 내용, 카테고리, 작성자
-        musicService.create(
-            "Sample Song", 
-            "Artist", 
-            "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 
-            "This is a sample music description.", 
-            "K-POP", 
-            admin
-        );
+            // 중복 체크 (이미 데이터 있으면 안 넣음)
+            if (musicService.getList().isEmpty()) {
+                musicService.create(
+                    "Sample Song",
+                    "Sample Artist",
+                    "https://example.com/sample.mp3",
+                    "샘플 음악 설명",
+                    "POP",
+                    admin
+                );
+            }
+        } catch (Exception e) {
+            // 초기 데이터 실패해도 앱 죽지 않게 로그만
+            System.err.println("DataInitializer 실패: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
