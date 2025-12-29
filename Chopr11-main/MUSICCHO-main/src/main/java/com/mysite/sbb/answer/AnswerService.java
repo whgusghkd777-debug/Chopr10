@@ -4,11 +4,13 @@ import com.mysite.sbb.music.Music;
 import com.mysite.sbb.user.SiteUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
 public class AnswerService {
+
     private final AnswerRepository answerRepository;
 
     public void create(Music music, String content, SiteUser author) {

@@ -1,39 +1,21 @@
-package com.mysite.sbb.music.controller;
+package com.mysite.sbb.music;
 
-import com.mysite.sbb.music.Music;
-import com.mysite.sbb.music.MusicService;
-import com.mysite.sbb.music.dto.MusicListDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping("/music")
 @Controller
+@RequestMapping("/music")
 public class MusicController {
 
-    private final MusicService musicService;
-
-    public MusicController(MusicService musicService) {
-        this.musicService = musicService;
-    }
+    @Autowired
+    private MusicService musicService;
 
     @GetMapping("/list")
     public String list(Model model) {
-        List<MusicListDto> musicList = this.musicService.getList();
-        model.addAttribute("musicList", musicList); 
-        return "music_list";
-    }
-
-    @GetMapping("/detail/{id}")
-    public String detail(Model model, @PathVariable("id") Integer id) { // Long 대신 Integer 사용
-        Music music = this.musicService.getMusic(id);
-        model.addAttribute("music", music);
-        
-        if (music.getUrl() != null && music.getUrl().contains("watch?v=")) {
-            String embedUrl = music.getUrl().replace("watch?v=", "embed/");
-            model.addAttribute("embedUrl", embedUrl);
-        }
-        return "music_detail";
+        model.addAttribute("musicList", musicService.getList());
+        return "music/list"; // templates/music/list.html
     }
 }

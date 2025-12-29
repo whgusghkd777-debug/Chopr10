@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Cho</title>
+    <style>
+        :root {
+            --primary: #007AFF; --bg-primary: #F5F5F7; --bg-secondary: #FFFFFF;
+            --text-primary: #1D1D1F; --glass-bg: rgba(255, 255, 255, 0.8);
+        }
+        body { margin: 0; background: var(--bg-primary); font-family: -apple-system, sans-serif; }
+        header {
+            position: sticky; top: 0; z-index: 1000; background: var(--glass-bg);
+            backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 40px; height: 64px;
+        }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 8px 18px; border-radius: 20px; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="font-weight: bold; font-size: 1.4rem; color: var(--primary);">Music Cho</div>
+        <nav>
+            <a href="/music/list" style="text-decoration:none; color:var(--text-primary); margin-right:20px;">一覧</a>
+            <span sec:authorize="isAnonymous()">
+                <a th:href="@{/user/login}" class="btn-primary">ログイン</a>
+            </span>
+            <span sec:authorize="isAuthenticated()">
+                <a th:href="@{/user/logout}" style="text-decoration:none;">ログ아웃</a>
+            </span>
+        </nav>
+    </header>
+    <div class="container">
+        <th:block th:replace="${content}"></th:block>
+    </div>
+</body>
+</html>

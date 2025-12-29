@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout(~{::section})}">
+<section>
+    <div style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="font-weight: 800; font-size: 2.5rem;">楽曲フィード</h1>
+        <a href="/music/create" class="btn-primary">+ 投稿する</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
+        <div th:each="music : ${musicList}" style="background: white; border-radius: 24px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <div style="margin-bottom: 15px;">
+                <span style="background: #F2F2F7; color: #007AFF; padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 600;" 
+                      th:text="${music.category}">Category</span>
+            </div>
+            <h3 th:text="${music.title}" style="margin: 0 0 10px 0; font-size: 1.5rem; font-weight: 700;"></h3>
+            <p th:text="${music.artist}" style="color: #86868B; margin-bottom: 25px;"></p>
+            <a th:href="@{|/music/detail/${music.id}|}" style="text-decoration: none; color: var(--primary); font-weight: 600;">詳細を見る →</a>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(musicList)}" style="text-align: center; padding: 80px 0; color: #86868B;">
+        まだ登録された楽曲がありません。
+    </div>
+</section>
+</html>

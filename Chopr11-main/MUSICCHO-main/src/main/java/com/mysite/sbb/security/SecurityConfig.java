@@ -18,13 +18,12 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
                 .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
-            .csrf((csrf) -> csrf.disable()) // 로컬 개발 시에는 잠시 꺼두는 게 편합니다.
+            .csrf((csrf) -> csrf.disable()) 
             .headers((headers) -> headers
                 .frameOptions((frameOptions) -> frameOptions.sameOrigin()));
         return http.build();
     }
 
-    // ★ 이 Bean이 정의되어 있어야 UserService에서 에러가 안 납니다!
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

@@ -30,7 +30,7 @@ public class Music {
     private String artist;
 
     @Column(columnDefinition = "TEXT")
-    private String content; // 이 필드가 반드시 있어야 합니다.
+    private String content; 
 
     private String url;
 
