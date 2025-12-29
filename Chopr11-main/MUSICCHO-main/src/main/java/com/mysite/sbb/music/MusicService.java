@@ -1,3 +1,13 @@
+package com.mysite.sbb.music;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import com.mysite.sbb.music.dto.MusicListDto;
+import com.mysite.sbb.user.SiteUser;
+import java.time.LocalDateTime;
+
 getList() {
     List<Music> musicList = this.musicRepository.findAll();
     return musicList.stream().map(music -> {
@@ -25,4 +35,5 @@ public void create(String title, String artist, String url, String content, Stri
     music.setAuthor(author);
     music.setCreateDate(LocalDateTime.now());
     this.musicRepository.save(music);
+}
 }

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>음악 목록</title>
+</head>
+<body>
+    <h1>음악 목록</h1>
+    <table>
+        <tr>
+            <th>제목</th>
+            <th>아티스트</th>
+            <th>카테고리</th>
+        </tr>
+        <tr th:each="music : ${musicList}">
+            <td th:text="${music.title}"></td>
+            <td th:text="${music.artist}"></td>
+            <td th:text="${music.category}"></td>
+        </tr>
+    </table>
+</body>
+</html>

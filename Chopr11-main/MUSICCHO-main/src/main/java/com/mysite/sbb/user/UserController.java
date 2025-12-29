@@ -1,5 +1,6 @@
 package com.mysite.sbb.user;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/user")
 public class UserController {
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/login")
     public String login() {
@@ -26,7 +30,7 @@ public class UserController {
             model.addAttribute("error", "パスワードが一致しません。");
             return "user/signup";
         }
-        // TODO: 회원가입 서비스 로직 추가 (DB 저장)
+        userService.create(username, email, password);
         return "redirect:/user/login";
     }
 }

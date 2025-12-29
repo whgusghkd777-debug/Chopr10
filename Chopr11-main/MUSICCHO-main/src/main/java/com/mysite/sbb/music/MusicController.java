@@ -16,6 +16,6 @@ public class MusicController {
     @GetMapping("/list")
     public String list(Model model) {
         model.addAttribute("musicList", musicService.getList());
-        return "music/list"; // templates/music/list.html
+        return "music/list";
     }
 }
