@@ -18,6 +18,7 @@ public class MusicController {
         return "music/list";
     }
 
+    // [중요] API 경로 명시 및 권한 확인 필요
     @GetMapping("/listJson")
     @ResponseBody
     public List<Music> listJson() {
@@ -28,8 +29,7 @@ public class MusicController {
     public String detail(@PathVariable("id") Integer id, Model model) {
         Music music = musicService.getMusic(id);
         
-        // [실무 핵심] 안정적인 유튜브 ID 추출 로직
-        String videoId = "dQw4w9WgXcQ"; // 기본값 (에러 방지)
+        String videoId = "dQw4w9WgXcQ"; 
         String url = music.getUrl();
 
         if (url != null && !url.isEmpty()) {
@@ -42,10 +42,10 @@ public class MusicController {
             }
         }
         
-        // 템플릿에서 바로 사용할 수 있도록 임베드용 주소로 교체
-        music.setUrl("https://www.youtube.com/embed/" + videoId);
-        
+        // 프론트 detail_fragment.html에서 th:src="${embedUrl}"을 사용하므로 변수명을 맞춤
         model.addAttribute("music", music);
+        model.addAttribute("embedUrl", "https://www.youtube.com/embed/" + videoId);
+        
         return "music/detail_fragment"; 
     }
 }

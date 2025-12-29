@@ -1,0 +1,18 @@
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="logo" onclick="location.href='/music/list'">Music Cho</div>
+        <div class="nav-right">
+            <div class="user-info">
+                <span sec:authorize="isAuthenticated()">
+                    <span th:text="${#authentication.name} + ' 様'"></span>
+                    <form th:action="@{/user/logout}" method="post" style="display:inline;">
+                        <button type="submit" style="color:var(--primary); border:none; background:none; cursor:pointer; margin-left:10px;">ログアウト</button>
+                    </form>
+                </span>
+                <span sec:authorize="isAnonymous()">
+                    <button onclick="location.href='/user/login'" style="color:var(--primary); border:none; background:none; cursor:pointer;">ログイン</button>
+                </span>
+            </div>
+        </div>
+    </div>
+</nav>
