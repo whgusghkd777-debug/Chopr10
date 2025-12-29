@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Controller
@@ -25,8 +27,7 @@ public class MusicController {
 
     private final MusicService musicService;
     private final UserService userService;
-
-    private static final String UPLOAD_DIR = "C:/sbb_uploads/music/";  // WebConfig와 동일
+    private static final String UPLOAD_DIR = "C:/sbb_uploads/music/";
 
     @GetMapping("/music/list")
     public String list(Model model) {
@@ -40,10 +41,29 @@ public class MusicController {
         return musicService.getList();
     }
 
+    // [修正] @ResponseBodyを削除し、詳細画面(HTML)を返すように変更
     @GetMapping("/music/detail/{id}")
-    @ResponseBody
-    public Music detail(@PathVariable Integer id) {
-        return musicService.getMusic(id);
+    public String detail(@PathVariable("id") Integer id, Model model) {
+        Music music = musicService.getMusic(id);
+        model.addAttribute("music", music);
+        
+        // YouTubeのURLを埋め込み用(Embed)に変換
+        String embedUrl = convertToEmbedUrl(music.getUrl());
+        model.addAttribute("embedUrl", embedUrl);
+        
+        return "music/detail_fragment"; 
+    }
+
+    private String convertToEmbedUrl(String url) {
+        if (url == null) return "";
+        String videoId = "";
+        String regex = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*";
+        Pattern compiledPattern = Pattern.compile(regex);
+        Matcher matcher = compiledPattern.matcher(url);
+        if (matcher.find()) {
+            videoId = matcher.group();
+        }
+        return "https://www.youtube.com/embed/" + videoId;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -55,50 +75,35 @@ public class MusicController {
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "url", required = false) String url,
             @RequestParam(value = "audioFile", required = false) MultipartFile audioFile,
-            @RequestParam(value = "category", defaultValue = "기타") String category,
+            @RequestParam(value = "category", defaultValue = "その他") String category,
             Principal principal) {
 
         SiteUser user = userService.getUser(principal.getName());
-
         if (title == null || title.trim().isEmpty() || artist == null || artist.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "제목과 아티스트는 필수입니다.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "タイトルとアーティストは必須です。");
         }
 
         String finalUrl = url;
-
         if (audioFile != null && !audioFile.isEmpty()) {
-            if (url != null && !url.trim().isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "URL과 파일은 동시에 올릴 수 없습니다.");
-            }
-
             try {
                 String originalFilename = audioFile.getOriginalFilename();
                 String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
                 String savedFilename = UUID.randomUUID().toString() + extension;
-
                 File dir = new File(UPLOAD_DIR);
                 if (!dir.exists()) dir.mkdirs();
-
-                File savedFile = new File(UPLOAD_DIR + savedFilename);
-                audioFile.transferTo(savedFile);
-
-                finalUrl = "/uploads/music/" + savedFilename;  // WebConfig에서 /uploads/** 서빙
+                audioFile.transferTo(new File(UPLOAD_DIR + savedFilename));
+                finalUrl = "/uploads/music/" + savedFilename;
             } catch (IOException e) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장 실패");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ファイルの保存に失敗しました。");
             }
-        } else if (url == null || url.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "YouTube URL 또는 오디오 파일 하나는 필요합니다.");
         }
-
-        if (description == null) description = "";
-
-        return musicService.create(title, artist, description, finalUrl, category, user);
+        return musicService.create(title, artist, description != null ? description : "", finalUrl, category, user);
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/music/like/{id}")
     @ResponseBody
-    public Map<String, Object> like(@PathVariable Integer id, Principal principal) {
+    public Map<String, Object> like(@PathVariable("id") Integer id, Principal principal) {
         Music music = musicService.getMusic(id);
         SiteUser user = userService.getUser(principal.getName());
         musicService.like(music, user);

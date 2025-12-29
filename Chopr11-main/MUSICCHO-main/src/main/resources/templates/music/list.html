@@ -6,9 +6,7 @@
     <title>Music Cho</title>
     <meta name="_csrf" th:content="${_csrf?.token}"/>
     <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
-    
     <style>
-        /* [UI/UX] デザイン最適化 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #007AFF; --primary-hover: #0051D5; --secondary: #5856D6;
@@ -27,7 +25,7 @@
         .logo { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
         .container { max-width: 1400px; margin: 0 auto; padding: 48px 32px; }
         .ranking-section { background: var(--glass-bg); border-radius: 24px; padding: 32px; border: 1px solid var(--glass-border); margin-bottom: 48px; }
-        .ranking-item { display: flex; align-items: center; gap: 20px; padding: 20px; background: white; border-radius: 16px; margin-bottom: 10px; transition: 0.3s; }
+        .ranking-item { display: flex; align-items: center; gap: 20px; padding: 20px; background: white; border-radius: 16px; margin-bottom: 10px; transition: 0.3s; cursor: pointer;}
         .ranking-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
         .rank-thumb { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; }
         .rank-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -66,71 +64,39 @@
             <h2>🔥 人気ランキング</h2>
             <div id="rankingList" class="ranking-list"></div>
         </section>
-
         <div id="musicGrid" class="music-grid"></div>
     </div>
 
     <button class="fab" id="fabButton">+</button>
 
     <script th:inline="javascript">
-        /* 1. 全局変数定義 (グローバル変数定義) */
         let musicData = [];
         const isAuthenticated = [[${#authorization.expression('isAuthenticated()')}]];
-        
-        // バックエンド失敗時のサンプルデータ
-        const sampleData = [
-            {id: 1, title: "サンプル曲 1", artist: "アーティスト A", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", likes: 100},
-            {id: 2, title: "サンプル曲 2", artist: "アーティスト B", url: "https://www.youtube.com/watch?v=9bZkp7q19f0", likes: 85}
-        ];
 
-        /* 2. 初期化処理 (초기화 로직) */
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("Application Initialized");
-            initApp();
+            loadList();
+            document.getElementById('fabButton').addEventListener('click', handleFabClick);
         });
 
-        async function initApp() {
-            await loadList();
-            // イベントリスナー登録
-            document.getElementById('fabButton').addEventListener('click', handleFabClick);
-        }
-
-        /* 3. データ取得 (데이터 로드) */
         async function loadList() {
             try {
                 const res = await fetch('/music/listJson');
                 if (res.ok) {
                     musicData = await res.json();
-                } else {
-                    console.warn("Backend API access failed. Using sample data.");
-                    musicData = sampleData;
+                    renderRanking(musicData);
+                    renderGrid(musicData);
                 }
             } catch (e) {
-                console.error("Connection error:", e);
-                musicData = sampleData;
+                console.error("Data load failed", e);
             }
-            renderAll();
-        }
-
-        /* 4. レンダリング処理 (화면 그리기) */
-        function renderAll() {
-            renderRanking(musicData);
-            renderGrid(musicData);
         }
 
         function renderRanking(data) {
             const el = document.getElementById('rankingList');
-            if (!data || data.length === 0) {
-                el.innerHTML = '<p>データが存在しません。</p>';
-                return;
-            }
-            
             el.innerHTML = data.slice(0, 3).map((m, i) => `
-                <div class="ranking-item">
+                <div class="ranking-item" onclick="location.href='/music/detail/${m.id}'">
                     <div style="font-weight:bold; font-size:20px;">${i+1}</div>
-                    <div class="rank-thumb">
-                        <img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/mqdefault.jpg">
-                    </div>
+                    <div class="rank-thumb"><img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/mqdefault.jpg"></div>
                     <div>
                         <div style="font-weight:bold;">${escapeHtml(m.title)}</div>
                         <div style="color:gray; font-size:12px;">${escapeHtml(m.artist)}</div>
@@ -141,16 +107,9 @@
 
         function renderGrid(data) {
             const el = document.getElementById('musicGrid');
-            if (!data || data.length === 0) {
-                el.innerHTML = '<p>表示できる音楽がありません。</p>';
-                return;
-            }
-
             el.innerHTML = data.map(m => `
-                <div class="music-card" onclick="goToDetail(${m.id})">
-                    <div class="card-thumb">
-                        <img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/hqdefault.jpg" alt="${m.title}">
-                    </div>
+                <div class="music-card" onclick="location.href='/music/detail/${m.id}'">
+                    <div class="card-thumb"><img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/hqdefault.jpg"></div>
                     <div class="card-body">
                         <h3>${escapeHtml(m.title)}</h3>
                         <p>${escapeHtml(m.artist)}</p>
@@ -159,23 +118,15 @@
             `).join('');
         }
 
-        /* 5. 制御ロジック (제어 로직) */
-        function goToDetail(id) {
-            // 詳細ページへ遷移
-            window.location.href = '/music/detail/' + id;
-        }
-
         function handleFabClick() {
             if (!isAuthenticated) {
-                alert('ログインが必要です。ログインページへ移動します。');
-                window.location.href = '/user/login';
-                return;
+                alert("ログインが必要です。");
+                location.href = '/user/login';
+            } else {
+                alert("投稿機能は準備中です。");
             }
-            // 投稿ページへ遷移、またはモーダル表示
-            window.location.href = '/music/create'; 
         }
 
-        /* 6. ユーティリティ (유틸리티) */
         function extractVideoId(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
             const match = url?.match(regExp);
@@ -183,7 +134,6 @@
         }
 
         function escapeHtml(text) {
-            if (!text) return "";
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;

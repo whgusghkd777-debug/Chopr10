@@ -1,29 +1,56 @@
 <!DOCTYPE html>
-<html th:replace="~{layout :: layout(~{::section})}">
+<html th:replace="~{layout :: layout(~{::section})}" xmlns:th="http://www.thymeleaf.org">
 <section>
-    <div class="card">
-        <h1 th:text="${music.title}" style="font-weight: 800; font-size: 2rem; margin-bottom: 10px;"></h1>
-        <p style="color: #86868B; margin-bottom: 30px;">アーティスト: <span th:text="${music.artist}"></span></p>
+    <div class="card" style="background: white; padding: 40px; border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-width: 900px; margin: 40px auto;">
+        <h1 th:text="${music.title}" style="font-weight: 800; font-size: 2.5rem; margin-bottom: 10px; color: #1D1D1F;"></h1>
+        <p style="color: #86868B; margin-bottom: 30px; font-size: 1.1rem;">アーティスト: <span th:text="${music.artist}"></span></p>
         
-        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 15px; background: #000;">
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 20px; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
             <iframe th:src="${embedUrl}" 
                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                     allowfullscreen></iframe>
         </div>
 
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; display: flex; gap: 20px;">
-            <button class="btn" style="background: #FFF0F0; color: #FF3B30; border: none; padding: 10px 20px; border-radius: 15px; font-weight: 600;">
-                ❤️ いいね <span th:text="${music.voter != null ? music.voter.size() : 0}"></span>
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; display: flex; gap: 20px; align-items: center;">
+            <button class="btn" id="btnLike" th:onclick="|likeMusic(${music.id})|"
+                    style="background: #FFF0F0; color: #FF3B30; border: none; padding: 12px 24px; border-radius: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                ❤️ いいね <span id="likeCount" th:text="${music.likers != null ? music.likers.size() : 0}"></span>
             </button>
-            <div style="align-self: center; color: #86868B;">
-                コメント: <span th:text="${music.answerList != null ? music.answerList.size() : 0}"></span>件
+            <div style="color: #86868B; font-weight: 500;">
+                💬 コメント: <span th:text="${music.answerList != null ? music.answerList.size() : 0}"></span>件
             </div>
         </div>
 
-        <div style="margin-top: 30px; line-height: 1.6;">
-            <h4 style="font-weight: 600;">楽曲説明</h4>
-            <p th:text="${music.content}"></p>
+        <div style="margin-top: 40px; line-height: 1.8; color: #424245;">
+            <h4 style="font-weight: 700; font-size: 1.2rem; margin-bottom: 15px; color: #1D1D1F;">楽曲説明</h4>
+            <div style="background: #F5F5F7; padding: 25px; border-radius: 18px;">
+                <p th:text="${music.content}" style="white-space: pre-wrap;"></p>
+            </div>
         </div>
     </div>
+
+    <script th:inline="javascript">
+        async function likeMusic(id) {
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            try {
+                const res = await fetch('/music/like/' + id, {
+                    method: 'POST',
+                    headers: { [header]: token }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('likeCount').innerText = data.likes;
+                } else if (res.status === 403) {
+                    alert("ログインが必要です。");
+                    location.href = '/user/login';
+                }
+            } catch (e) {
+                console.error("Error:", e);
+            }
+        }
+    </script>
 </section>
 </html>

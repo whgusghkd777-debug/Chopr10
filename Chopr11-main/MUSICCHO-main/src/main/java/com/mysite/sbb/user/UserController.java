@@ -16,19 +16,20 @@ public class UserController {
 
     @GetMapping("/login")
     public String login() {
-        return "user/login";
+        // [修正] 実際のファイル名に合わせて変更
+        return "user/login_fragment"; 
     }
 
     @GetMapping("/signup")
     public String signup() {
-        return "user/signup";
+        return "user/signup_fragment"; 
     }
 
     @PostMapping("/signup")
     public String signup(String username, String email, String password, String passwordConfirm, Model model) {
         if (!password.equals(passwordConfirm)) {
             model.addAttribute("error", "パスワードが一致しません。");
-            return "user/signup";
+            return "user/signup_fragment";
         }
         userService.create(username, email, password);
         return "redirect:/user/login";
