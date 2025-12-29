@@ -17,28 +17,42 @@
     <div th:replace="~{fragments/modal :: modals}"></div>
 
     <script th:inline="javascript">
-        /* 네가 준 목표 JS 거의 그대로 복사 (생략된 부분 포함해서 전체 넣음) */
         let musicData = [];
         let adminMode = false;
         let selectedId = null;
         let shareType = 'youtube';
         let currentLikes = 0;
         let isLiked = false;
+        let isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
 
-        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
-        const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || /*[[${_csrf.token}]]*/ '';
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || /*[[${_csrf.headerName}]]*/ '';
 
-        const sampleData = [ /* 샘플 데이터 그대로 */ ];
+        const sampleData = [
+            {
+                id: 1,
+                title: "サンプル曲1",
+                artist: "サンプルアーティスト",
+                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                likes: 42,
+                category: "POP",
+                content: "これはサンプル説明です。"
+            },
+            {
+                id: 2,
+                title: "サンプル曲2",
+                artist: "テストアーティスト",
+                url: "https://www.youtube.com/watch?v=example2",
+                likes: 15,
+                category: "ROCK",
+                content: "もう一つのサンプル。"
+            }
+        ];
 
         window.onload = () => {
             loadList();
         };
 
-        /* loadList, renderRanking, renderGrid, openDetail, toggleLike 등 모든 함수 그대로 */
-        /* (너무 길어서 여기서 생략하지만, 네 목표 파일의 <script> 전체 내용을 복사해서 붙여넣기 하면 됨) */
-
-        /* 중요한 함수만 예시 */
         async function loadList() {
             try {
                 const res = await fetch('/music/listJson');
@@ -55,14 +69,223 @@
         }
 
         function renderRanking(data) {
-            /* 목표 코드와 동일 */
+            const rankingList = document.getElementById('rankingList');
+            if (data.length === 0) {
+                rankingList.innerHTML = '<p class="empty-state">まだ音楽がありません。</p>';
+                return;
+            }
+
+            const top5 = data.slice(0, 5);
+            rankingList.innerHTML = top5.map((m, index) => `
+                <div class="ranking-item" onclick="openDetail(${m.id})">
+                    <div class="rank-badge rank-${index + 1 <= 3 ? index + 1 : 'other'}">${index + 1}</div>
+                    <div class="rank-thumb">
+                        <img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/mqdefault.jpg" alt="${m.title}">
+                    </div>
+                    <div class="rank-info">
+                        <div class="rank-title">${escapeHtml(m.title)}</div>
+                        <div class="rank-artist">${escapeHtml(m.artist)}</div>
+                    </div>
+                    <div class="rank-likes">${m.likes} ❤️</div>
+                </div>
+            `).join('');
         }
 
         function renderGrid(data) {
-            /* 목표 코드와 동일 */
+            const musicGrid = document.getElementById('musicGrid');
+            if (data.length === 0) {
+                musicGrid.innerHTML = '<p class="empty-state">まだ音楽がありません。</p>';
+                return;
+            }
+
+            musicGrid.innerHTML = data.map(m => `
+                <div class="music-card ${adminMode ? 'delete-mode' : ''}" onclick="${adminMode ? `deleteMusic(${m.id})` : `openDetail(${m.id})`}">
+                    <div class="card-thumb">
+                        <img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/hqdefault.jpg" alt="${m.title}">
+                    </div>
+                    <div class="card-body">
+                        <h3>${escapeHtml(m.title)}</h3>
+                        <p>${escapeHtml(m.artist)}</p>
+                        <div class="card-stats">
+                            <div class="card-stat">❤️ ${m.likes}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        /* 나머지 함수들도 목표 파일 그대로 복사 */
+        async function openDetail(id) {
+            selectedId = id;
+            try {
+                const res = await fetch(`/music/detail/${id}`);
+                if (res.ok) {
+                    const m = await res.json();
+                    document.getElementById('detailTitle').textContent = m.title;
+                    document.getElementById('detailArtist').textContent = m.artist;
+                    document.getElementById('detailLikeCount').textContent = m.likes;
+                    currentLikes = m.likes;
+                    isLiked = m.likers?.some(u => u.username === /*[[${#authentication?.name}]]*/ '') || false;
+
+                    const videoContainer = document.getElementById('videoContainer');
+                    if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
+                        const videoId = extractVideoId(m.url);
+                        videoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+                    } else {
+                        videoContainer.innerHTML = `<audio controls><source src="${m.url}" type="audio/mpeg">お使いのブラウザはaudioタグをサポートしていません。</audio>`;
+                    }
+
+                    const commentList = document.getElementById('commentList');
+                    if (m.answerList && m.answerList.length > 0) {
+                        commentList.innerHTML = m.answerList.map(ans => `
+                            <div class="comment-item">
+                                <strong>${escapeHtml(ans.author.username)}</strong>
+                                <div>${escapeHtml(ans.content)}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        commentList.innerHTML = '<p class="empty-state">まだフィードバックがありません。</p>';
+                    }
+                    updateLikeButton();
+                } else {
+                    alert('ロード失敗');
+                    return;
+                }
+            } catch (e) {
+                alert('エラー: ' + e.message);
+                return;
+            }
+            openModal('detail');
+        }
+
+        function updateLikeButton() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeIcon = document.getElementById('likeIcon');
+            const likeText = document.getElementById('likeText');
+            const likeCountEl = document.getElementById('likeCount');
+
+            if (isLiked) {
+                likeBtn.classList.add('liked');
+                likeIcon.textContent = '❤️';
+                likeText.textContent = 'いいね済み';
+            } else {
+                likeBtn.classList.remove('liked');
+                likeIcon.textContent = '🤍';
+                likeText.textContent = 'いいね';
+            }
+            likeCountEl.textContent = currentLikes;
+        }
+
+        async function toggleLike() {
+            if (!isAuthenticated) {
+                alert('ログインが必要です');
+                closeModal('detail');
+                openModal('login');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/music/like/${selectedId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    currentLikes = data.likes;
+                    isLiked = data.isLiked;
+                    updateLikeButton();
+                    loadList();
+                } else {
+                    alert('いいねに失敗しました');
+                }
+            } catch (e) {
+                alert('エラー: ' + e.message);
+            }
+        }
+
+        function openModal(type) {
+            const modal = document.getElementById(type + 'Modal');
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeModal(type) {
+            const modal = document.getElementById(type + 'Modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        function handleFabClick() {
+            if (!isAuthenticated) {
+                openModal('login');
+            } else {
+                openModal('share');
+                setShareType('youtube');
+            }
+        }
+
+        function setShareType(type) {
+            shareType = type;
+            document.getElementById('btnYoutube').classList.toggle('active', type === 'youtube');
+            document.getElementById('btnFile').classList.toggle('active', type === 'file');
+            document.getElementById('youtubeSection').style.display = type === 'youtube' ? 'block' : 'none';
+            document.getElementById('fileSection').style.display = type === 'file' ? 'block' : 'none';
+        }
+
+        async function shareMusic() {
+            const formData = new FormData();
+            formData.append('title', document.getElementById('inTitle').value);
+            formData.append('artist', document.getElementById('inArtist').value);
+            formData.append('description', document.getElementById('inDesc').value || '');
+
+            if (shareType === 'youtube') {
+                formData.append('url', document.getElementById('inUrl').value);
+            } else if (shareType === 'file') {
+                const fileInput = document.getElementById('audioFile');
+                if (fileInput.files[0]) {
+                    formData.append('audioFile', fileInput.files[0]);
+                }
+            }
+
+            formData.append('category', 'POP');
+
+            try {
+                const res = await fetch('/music/create', {
+                    method: 'POST',
+                    headers: { [csrfHeader]: csrfToken },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    alert('音楽が正常に共有されました！');
+                    document.getElementById('inTitle').value = '';
+                    document.getElementById('inArtist').value = '';
+                    document.getElementById('inDesc').value = '';
+                    document.getElementById('inUrl').value = '';
+                    closeModal('share');
+                    loadList();
+                } else {
+                    alert('共有失敗');
+                }
+            } catch (e) {
+                alert('エラー: ' + e.message);
+            }
+        }
+
+        function extractVideoId(url) {
+            if (!url) return 'dQw4w9WgXcQ';
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : 'dQw4w9WgXcQ';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
 </body>
 </html>

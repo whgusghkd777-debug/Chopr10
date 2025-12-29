@@ -1,16 +1,19 @@
 package com.mysite.sbb.music;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.mysite.sbb.answer.Answer;
 import com.mysite.sbb.user.SiteUser;
-
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+
+@Getter
+@Setter
 @Entity
 public class Music {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -22,50 +25,23 @@ public class Music {
     private String artist;
 
     @Column(columnDefinition = "TEXT")
-    private String content;
+    private String content;  // 설명이나 description
 
-    private String url;
+    private String url;  // YouTube나 파일 링크
 
     private String category;
 
     private LocalDateTime createDate;
 
-    private int likes = 0;
+    @OneToMany(mappedBy = "music", cascade = CascadeType.REMOVE)
+    private List<Answer> answerList;
 
     @ManyToOne
     private SiteUser author;
 
-    @OneToMany(mappedBy = "music", cascade = CascadeType.REMOVE)
-    private List<Answer> answerList;
+    // 새로 추가: 좋아요
+    private Integer likes = 0;
 
-    // 직접 getter/setter
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getArtist() { return artist; }
-    public void setArtist(String artist) { this.artist = artist; }
-
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public LocalDateTime getCreateDate() { return createDate; }
-    public void setCreateDate(LocalDateTime createDate) { this.createDate = createDate; }
-
-    public int getLikes() { return likes; }
-    public void setLikes(int likes) { this.likes = likes; }
-
-    public SiteUser getAuthor() { return author; }
-    public void setAuthor(SiteUser author) { this.author = author; }
-
-    public List<Answer> getAnswerList() { return answerList; }
-    public void setAnswerList(List<Answer> answerList) { this.answerList = answerList; }
+    @ManyToMany
+    private Set<SiteUser> likers;
 }

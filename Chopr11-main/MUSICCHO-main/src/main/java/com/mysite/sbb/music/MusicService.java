@@ -1,11 +1,16 @@
+// MusicService.java 전체 (import java.util.Set 추가, likers 초기화 안전하게)
 package com.mysite.sbb.music;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
+import com.mysite.sbb.DataNotFoundException;
 import com.mysite.sbb.user.SiteUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;  // 이 import 추가 필수!
+import java.util.HashSet;
 
 @RequiredArgsConstructor
 @Service
@@ -13,47 +18,49 @@ public class MusicService {
 
     private final MusicRepository musicRepository;
 
-    // 목록
     public List<Music> getList() {
-        return this.musicRepository.findAll();
+        return musicRepository.findAllOrderByLikesDesc();
     }
 
-    // 단건 조회 (Integer로 통일)
     public Music getMusic(Integer id) {
-        return this.musicRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("音楽が見つかりません"));
+        Optional<Music> music = musicRepository.findById(id);
+        return music.orElseThrow(() -> new DataNotFoundException("music not found"));
     }
 
-    // 생성
-    public void create(String title, String artist, String url, String content, String category, SiteUser author) {
+    public Music create(String title, String artist, String content, String url, String category, SiteUser user) {
         Music music = new Music();
         music.setTitle(title);
         music.setArtist(artist);
-        music.setUrl(url);
         music.setContent(content);
+        music.setUrl(url);
         music.setCategory(category);
-        music.setAuthor(author);
         music.setCreateDate(LocalDateTime.now());
+        music.setAuthor(user);
         music.setLikes(0);
-        this.musicRepository.save(music);
+
+        // likers 초기화 (null 방지)
+        if (music.getLikers() == null) {
+            music.setLikers(new HashSet<>());
+        }
+
+        musicRepository.save(music);
+        return music;
     }
 
-    // 좋아요 (임시 +1)
-    public boolean toggleLike(Integer musicId, SiteUser user) {
-        Music music = getMusic(musicId);
-        music.setLikes(music.getLikes() + 1);
-        this.musicRepository.save(music);
-        return true;
-    }
+    public void like(Music music, SiteUser user) {
+        Set<SiteUser> likers = music.getLikers();
+        if (likers == null) {
+            likers = new HashSet<>();
+            music.setLikers(likers);
+        }
 
-    public int getLikesCount(Integer musicId) {
-        Music music = getMusic(musicId);
-        return music.getLikes();
-    }
-
-    // 삭제
-    public void delete(Integer id) {
-        Music music = getMusic(id);
-        this.musicRepository.delete(music);
+        if (likers.contains(user)) {
+            likers.remove(user);
+            music.setLikes(music.getLikes() - 1);
+        } else {
+            likers.add(user);
+            music.setLikes(music.getLikes() + 1);
+        }
+        musicRepository.save(music);
     }
 }

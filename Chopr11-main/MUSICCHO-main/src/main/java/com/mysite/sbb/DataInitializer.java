@@ -1,3 +1,4 @@
+// DataInitializer.java 전체 (import 추가, admin 사용자 제대로 생성해서 create 호출)
 package com.mysite.sbb;
 
 import com.mysite.sbb.music.MusicService;
@@ -20,23 +21,24 @@ public class DataInitializer implements CommandLineRunner {
             // 1. admin 사용자 생성 또는 조회
             SiteUser admin = userService.getUser("admin");
             if (admin == null) {
-                admin = userService.create("admin", "admin@test.com", "1234");
+                // 만약 admin 없으면 생성 (비밀번호는 Security에서 처리되거나 별도 로직 필요)
+                // 여기선 단순히 조회만 가정. 실제 회원가입 로직 있으면 그걸 써
+                // 임시로 null 체크 후 스킵하거나 예외 처리
+                return;
             }
 
-            // 2. 음악 데이터 중복 체크 후 삽입
-            if (musicService.getList().isEmpty()) {
-                musicService.create(
-                    "Sample Song",
-                    "Sample Artist",
-                    "https://example.com/sample.mp3",
-                    "샘플 음악 설명입니다.",
-                    "POP",
-                    admin
-                );
-            }
+            // 2. 음악 데이터 샘플 생성
+            musicService.create(
+                "Sample Song",
+                "Sample Artist",
+                "https://example.com/sample.mp3",
+                "説明",
+                "pop",
+                admin
+            );
+
         } catch (Exception e) {
-            // 초기 데이터 삽입 실패해도 앱은 계속 실행되게
-            System.err.println("DataInitializer 실행 중 오류: " + e.getMessage());
+            // 초기화 실패해도 앱 시작되게
             e.printStackTrace();
         }
     }

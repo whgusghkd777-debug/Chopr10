@@ -1,29 +1,126 @@
 <div th:fragment="modals">
-    <!-- 상세 모달 -->
-    <div class="modal" id="detailModal">
-        <div class="modal-content wide">
-            <!-- 상세 내용 목표 그대로 -->
+    <!-- FAB (공유 버튼) -->
+    <div class="fab" onclick="handleFabClick()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+    </div>
+
+    <!-- 상세 보기 모달 -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="mTitle">タイトル</h2>
+                <span class="close-btn" onclick="closeModal('detail')">×</span>
+            </div>
+            <div id="mediaContainer" class="detail-media"></div>
+            <div class="detail-info">
+                <div class="detail-artist" id="mArtist">アーティスト</div>
+                <div class="detail-desc" id="mDesc">説明がありません。</div>
+            </div>
+            <div class="like-section">
+                <button id="likeBtn" class="like-btn" onclick="toggleLike()">
+                    <span id="likeIcon">🤍</span>
+                    <span id="likeText">いいね</span>
+                </button>
+                <span id="likeCount">0</span> いいね
+            </div>
+            <div class="comment-section">
+                <h3>フィードバック</h3>
+                <div id="commentList"></div>
+                <textarea id="comInput" class="comment-input" placeholder="フィードバックを入力..."></textarea>
+                <button class="btn" onclick="postComment()">送信</button>
+            </div>
         </div>
     </div>
 
-    <!-- 공유 모달 -->
-    <div class="modal" id="shareModal">
+    <!-- 음악 공유 모달 -->
+    <div id="shareModal" class="modal">
         <div class="modal-content">
-            <!-- 공유 폼 목표 그대로 -->
+            <div class="modal-header">
+                <h2 class="modal-title">音楽を共有</h2>
+                <span class="close-btn" onclick="closeModal('share')">×</span>
+            </div>
+            <div class="type-selector">
+                <button id="btnYoutube" class="type-btn active" onclick="setShareType('youtube')">YouTube</button>
+                <button id="btnFile" class="type-btn" onclick="setShareType('file')">ファイルアップロード</button>
+            </div>
+            <div class="form-group">
+                <label>タイトル</label>
+                <input id="inTitle" class="form-input" type="text" required>
+            </div>
+            <div class="form-group">
+                <label>アーティスト</label>
+                <input id="inArtist" class="form-input" type="text" required>
+            </div>
+            <div id="youtubeSection">
+                <div class="form-group">
+                    <label>YouTube URL</label>
+                    <input id="inUrl" class="form-input" type="url" placeholder="https://www.youtube.com/watch?v=..." required>
+                </div>
+            </div>
+            <div id="fileSection" style="display:none;">
+                <div class="file-upload" onclick="document.getElementById('audioFile').click()">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#007AFF">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    <p>オーディオファイルをクリックして選択</p>
+                    <input id="audioFile" type="file" accept="audio/*" onchange="updateFileName()">
+                </div>
+                <div id="fileName" class="file-name"></div>
+            </div>
+            <div class="form-group">
+                <label>説明 (オプション)</label>
+                <textarea id="inDesc" class="form-input" rows="4"></textarea>
+            </div>
+            <button class="btn" onclick="shareMusic()">共有</button>
         </div>
     </div>
 
     <!-- 로그인 모달 -->
-    <div class="modal" id="loginModal">
+    <div id="loginModal" class="modal">
         <div class="modal-content">
-            <!-- 로그인 폼 -->
+            <div class="modal-header">
+                <h2 class="modal-title">ログイン</h2>
+                <span class="close-btn" onclick="closeModal('login')">×</span>
+            </div>
+            <form th:action="@{/user/login}" method="post">
+                <div class="form-group">
+                    <label>ユーザー名</label>
+                    <input name="username" class="form-input" type="text" required>
+                </div>
+                <div class="form-group">
+                    <label>パスワード</label>
+                    <input name="password" class="form-input" type="password" required>
+                </div>
+                <button type="submit" class="btn">ログイン</button>
+            </form>
+            <button class="btn-secondary" onclick="closeModal('login'); openModal('signup')">新規登録</button>
         </div>
     </div>
 
     <!-- 회원가입 모달 -->
-    <div class="modal" id="signupModal">
+    <div id="signupModal" class="modal">
         <div class="modal-content">
-            <!-- 회원가입 폼 -->
+            <div class="modal-header">
+                <h2 class="modal-title">新規登録</h2>
+                <span class="close-btn" onclick="closeModal('signup')">×</span>
+            </div>
+            <div class="form-group">
+                <label>ユーザー名</label>
+                <input id="regId" class="form-input" type="text" required>
+            </div>
+            <div class="form-group">
+                <label>メール</label>
+                <input id="regEmail" class="form-input" type="email" required>
+            </div>
+            <div class="form-group">
+                <label>パスワード</label>
+                <input id="regPw" class="form-input" type="password" required>
+            </div>
+            <div class="form-group">
+                <label>パスワード確認</label>
+                <input id="regPwConfirm" class="form-input" type="password" required>
+            </div>
+            <button class="btn" onclick="handleSignup()">登録</button>
         </div>
     </div>
 </div>
