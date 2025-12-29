@@ -6,21 +6,14 @@
 </head>
 <body>
     <h1>音楽一覧</h1>
-    <a href="/music/create">新しい音楽を登録</a>
     <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>タイトル</th>
-            <th>アーティスト</th>
-            <th>いいね</th>
-        </tr>
-        <tr th:each="music : ${musicList}">
-            <td th:text="${music.id}"></td>
-            <td th:text="${music.title}"></td>
-            <td th:text="${music.artist}"></td>
-            <td th:text="${music.likes}"></td>
+        <tr><th>ID</th><th>タイトル</th><th>アーティスト</th><th>いいね</th></tr>
+        <tr th:each="m : ${musicList}">
+            <td th:text="${m.id}"></td>
+            <td th:text="${m.title}"></td>
+            <td th:text="${m.artist}"></td>
+            <td th:text="${m.likes}"></td>
         </tr>
     </table>
-    <div th:if="${#lists.isEmpty(musicList)}">データなし</div>
 </body>
 </html>
