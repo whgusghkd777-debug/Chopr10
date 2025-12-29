@@ -13,35 +13,37 @@ public class MusicService {
 
     private final MusicRepository musicRepository;
 
+    // 목록
     public List<Music> getList() {
         return this.musicRepository.findAll();
     }
 
+    // 단건 조회 (Integer로 통일)
     public Music getMusic(Integer id) {
         return this.musicRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("音楽が見つかりません"));
     }
 
+    // 생성
     public void create(String title, String artist, String url, String content, String category, SiteUser author) {
         Music music = new Music();
         music.setTitle(title);
         music.setArtist(artist);
         music.setUrl(url);
-        music.setContent(content); 
+        music.setContent(content);
         music.setCategory(category);
         music.setAuthor(author);
         music.setCreateDate(LocalDateTime.now());
-        music.setLikes(0);  // 초기화
+        music.setLikes(0);
         this.musicRepository.save(music);
     }
 
-    // 좋아요 토글 (간단 +1/-1, 실제론 Set<SiteUser> likers로 중복 체크 추천)
+    // 좋아요 (임시 +1)
     public boolean toggleLike(Integer musicId, SiteUser user) {
         Music music = getMusic(musicId);
-        // 중복 체크 로직 추가 가능 (likers.contains(user) 등)
-        music.setLikes(music.getLikes() + 1);  // 임시로 항상 +1 (실제론 토글)
+        music.setLikes(music.getLikes() + 1);
         this.musicRepository.save(music);
-        return true;  // 좋아요 상태 (true = 눌림)
+        return true;
     }
 
     public int getLikesCount(Integer musicId) {
@@ -49,6 +51,7 @@ public class MusicService {
         return music.getLikes();
     }
 
+    // 삭제
     public void delete(Integer id) {
         Music music = getMusic(id);
         this.musicRepository.delete(music);

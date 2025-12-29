@@ -2,7 +2,6 @@ package com.mysite.sbb.music;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 import com.mysite.sbb.answer.Answer;
 import com.mysite.sbb.user.SiteUser;
@@ -22,6 +21,7 @@ import lombok.Setter;
 @Setter
 @Entity
 public class Music {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -33,7 +33,7 @@ public class Music {
     private String artist;
 
     @Column(columnDefinition = "TEXT")
-    private String content; 
+    private String content;
 
     private String url;
 
@@ -41,11 +41,7 @@ public class Music {
 
     private LocalDateTime createDate;
 
-    // 좋아요 수 (간단 구현)
-    private int likes = 0;
-
-    // 좋아요 누른 사용자 목록 (중복 방지용, 실제론 Voter 엔티티 추천)
-    // private Set<SiteUser> likers;
+    private int likes = 0;  // 좋아요 수 (기본 0)
 
     @OneToMany(mappedBy = "music", cascade = CascadeType.REMOVE)
     private List<Answer> answerList;
