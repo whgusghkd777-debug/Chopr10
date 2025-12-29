@@ -6,10 +6,10 @@
                 <button id="adminBtn" class="btn-admin" onclick="toggleAdminMode()">⚙️ 管理者削除モード: OFF</button>
             </div>
             <div class="user-info">
-                <span sec:authorize="authenticated" th:text="${#authentication.principal.username}">ユーザー</span>
-                <button sec:authorize="anonymous" class="btn" onclick="openModal('login')">ログイン</button>
+                <span sec:authorize="authenticated" th:text="${#authentication.principal.username}"></span>
+                <button sec:authorize="anonymous" onclick="openModal('login')">ログイン</button>
                 <form sec:authorize="authenticated" th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn">ログアウト</button>
+                    <button type="submit">ログアウト</button>
                 </form>
             </div>
         </div>
