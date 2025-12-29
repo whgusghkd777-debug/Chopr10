@@ -12,7 +12,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // @PreAuthorize 활성화
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Bean
@@ -21,13 +21,15 @@ public class SecurityConfig {
             .authorizeHttpRequests((auth) -> auth
                 .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/images/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
             .csrf((csrf) -> csrf.disable())
             .formLogin((form) -> form
                 .loginPage("/user/login")
-                .defaultSuccessUrl("/music/list"))
+                .defaultSuccessUrl("/music/list")
+                .permitAll())
             .logout((logout) -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout")) // 경로 확인
+                .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout")) // HTML과 일치시킴
                 .logoutSuccessUrl("/music/list")
                 .invalidateHttpSession(true))
         ;
