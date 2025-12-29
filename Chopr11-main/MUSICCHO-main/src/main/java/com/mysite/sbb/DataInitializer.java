@@ -17,10 +17,8 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // 1. 관리자 유저 생성
-        SiteUser admin;
-        try {
-            admin = userService.getUser("admin");
-        } catch (Exception e) {
+        SiteUser admin = userService.getUser("admin");
+        if (admin == null) {
             admin = userService.create("admin", "admin@test.com", "1234");
         }
 
