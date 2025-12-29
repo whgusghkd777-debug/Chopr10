@@ -21,7 +21,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
-    // ★ 여기 추가 ★ validation 어노테이션 사용하려면 필수
+    // ★ validation 추가 ★ (UserCreateForm, AnswerForm 에러 해결)
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     runtimeOnly 'org.postgresql:postgresql'

@@ -1,0 +1,42 @@
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Cho - フィードバック広場</title>
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #007AFF;
+            --primary-hover: #0051D5;
+            --secondary: #5856D6;
+            --bg-primary: #F5F5F7;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.16);
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* 나머지 모든 CSS 클래스 (.navbar, .container, .ranking-section, .music-grid, .music-card, .fab, .modal 등) */
+        /* 너가 이전에 준 DOCUMENT 전체 CSS 여기 다 복붙 (생략 없이) */
+        /* 예: .navbar { ... }부터 .empty-state { ... }까지 전부 */
+        /* 실제로 복붙하면 1000줄 넘음 - 너가 준 긴 CSS 전체 넣어 */
+    </style>
+</head>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ログイン - CreatorShare</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #F5F5F7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 350px; }
+        h2 { text-align: center; margin-bottom: 30px; color: #1d1d1f; letter-spacing: -0.5px; }
+        input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #d2d2d7; border-radius: 12px; box-sizing: border-box; font-size: 16px; background: #FBFBFD; }
+        button { width: 100%; padding: 14px; background: #007AFF; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .error-msg { color: #FF3B30; font-size: 13px; text-align: center; margin-bottom: 15px; }
+        .footer-link { text-align: center; margin-top: 25px; font-size: 14px; color: #86868b; }
+        .footer-link a { color: #007AFF; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <h2>ログイン</h2>
+    <div th:if="${param.error}" class="error-msg">
+        ユーザー名またはパスワードが正しくありません。
+    </div>
+    <form th:action="@{/user/login}" method="post">
+    <div>
+        <label>ID</label>
+        <input type="text" name="username" required> </div>
+    <div>
+        <label>Password</label>
+        <input type="password" name="password" required> </div>
+    <button type="submit">ログイン</button>
+</form>
+    <div class="footer-link">
+        アカウントをお持ちでないですか？ <a th:href="@{/user/signup}">新規登録</a>
+    </div>
+</div>
+</body>
+</html>
