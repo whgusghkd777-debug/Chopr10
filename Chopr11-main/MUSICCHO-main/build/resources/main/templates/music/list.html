@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,6 +63,28 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             cursor: pointer;
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .user-info span {
+            font-weight: 600;
+            font-size: 14px;
         }
         
         .container {
@@ -130,6 +152,7 @@
         .rank-thumb { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
         .rank-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
+        .rank-info { flex: 1; }
         .rank-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .rank-artist { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
         .rank-likes { font-size: 24px; font-weight: 700; color: var(--primary); min-width: 60px; text-align: right; }
@@ -148,6 +171,7 @@
             border: 1px solid var(--glass-border);
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
             box-shadow: var(--shadow-sm);
         }
         
@@ -161,6 +185,7 @@
             width: 100%;
             height: 200px;
             overflow: hidden;
+            position: relative;
         }
         
         .card-thumb img {
@@ -176,6 +201,7 @@
         
         .card-body {
             padding: 24px;
+            background: var(--glass-bg);
         }
         
         .card-body h3 {
@@ -207,18 +233,29 @@
             cursor: pointer;
             box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);
             z-index: 100;
-            transition: all 0.4s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .fab:hover {
             transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 12px 32px rgba(0, 122, 255, 0.5);
         }
     </style>
 </head>
 <body>
     <div class="navbar">
         <div class="navbar-content">
-            <div class="logo">Music Cho</div>
+            <div class="logo" onclick="location.href='/music/list'">Music Cho</div>
+            <div class="nav-right">
+                <div class="user-info">
+                    <span sec:authorize="isAuthenticated()" th:text="${#authentication.principal.username}"></span>
+                    <span sec:authorize="isAnonymous()">ゲスト</span>
+                    <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" style="background:none;border:none;color:var(--primary);cursor:pointer;">ログアウト</button>
+                    </form>
+                    <button sec:authorize="isAnonymous()" onclick="location.href='/user/login'" style="background:none;border:none;color:var(--primary);cursor:pointer;">ログイン</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -241,9 +278,9 @@
         const csrfHeader = /*[[${_csrf.headerName}]]*/ '';
 
         const sampleData = [
-            {id: 1, title: "サンプル曲1", artist: "サンプルアーティスト", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", likes: 100, category: "POP"},
-            {id: 2, title: "サンプル曲2", artist: "テストアーティスト", url: "https://www.youtube.com/watch?v=9bZkp7q19f0", likes: 80, category: "ROCK"},
-            {id: 3, title: "サンプル曲3", artist: "テスト", url: "https://www.youtube.com/watch?v=kXYiU_JCYtU", likes: 60, category: "BALLAD"}
+            {id: 1, title: "サンプル曲1", artist: "サンプルアーティスト", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", likes: 100},
+            {id: 2, title: "サンプル曲2", artist: "テストアーティスト", url: "https://www.youtube.com/watch?v=9bZkp7q19f0", likes: 80},
+            {id: 3, title: "サンプル曲3", artist: "テスト", url: "https://www.youtube.com/watch?v=kXYiU_JCYtU", likes: 60}
         ];
 
         window.onload = () => loadList();
@@ -306,16 +343,17 @@
 
         function handleFabClick() {
             if (!isAuthenticated) {
-                alert('ログインが必要です。');
+                location.href = '/user/login';
             } else {
-                alert('共有機能は現在開発中です。');
+                alert('音楽共有機能は現在開発中です');
             }
         }
 
         function extractVideoId(url) {
             if (!url) return 'dQw4w9WgXcQ';
-            const match = url.match(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*)/);
-            return match && match[1].length === 11 ? match[1] : 'dQw4w9WgXcQ';
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : 'dQw4w9WgXcQ';
         }
 
         function escapeHtml(text) {
