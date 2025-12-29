@@ -1,7 +1,226 @@
+<!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<th:block th:replace="~{fragments/head :: head}"></th:block>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Cho</title>
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #007AFF;
+            --primary-hover: #0051D5;
+            --secondary: #5856D6;
+            --bg-primary: #F5F5F7;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.16);
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 48px 32px;
+        }
+        
+        .ranking-section {
+            margin-bottom: 48px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .ranking-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .ranking-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .ranking-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .rank-badge {
+            font-size: 28px;
+            font-weight: 900;
+            min-width: 50px;
+            text-align: center;
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, var(--gold), #FFA500); color: white; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4); }
+        .rank-2 { background: linear-gradient(135deg, var(--silver), #A0A0A0); color: white; box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4); }
+        .rank-3 { background: linear-gradient(135deg, var(--bronze), #B87333); color: white; box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4); }
+        .rank-other { background: var(--glass-bg); color: var(--text-secondary); }
+
+        .rank-thumb { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
+        .rank-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        .rank-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rank-artist { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+        .rank-likes { font-size: 24px; font-weight: 700; color: var(--primary); min-width: 60px; text-align: right; }
+
+        .music-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 32px;
+        }
+        
+        .music-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .music-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .card-thumb {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+        
+        .music-card:hover .card-thumb img {
+            transform: scale(1.1);
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .card-body h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 700;
+        }
+        
+        .card-body p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);
+            z-index: 100;
+            transition: all 0.4s;
+        }
+        
+        .fab:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+    </style>
+</head>
 <body>
-    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Music Cho</div>
+        </div>
+    </div>
 
     <div class="container">
         <section class="ranking-section">
@@ -14,44 +233,20 @@
 
     <button class="fab" onclick="handleFabClick()">+</button>
 
-    <div th:replace="~{fragments/modal :: modals}"></div>
-
     <script th:inline="javascript">
         let musicData = [];
-        let adminMode = false;
-        let selectedId = null;
-        let shareType = 'youtube';
-        let currentLikes = 0;
-        let isLiked = false;
         let isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
 
-        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || /*[[${_csrf.token}]]*/ '';
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || /*[[${_csrf.headerName}]]*/ '';
+        const csrfToken = /*[[${_csrf.token}]]*/ '';
+        const csrfHeader = /*[[${_csrf.headerName}]]*/ '';
 
         const sampleData = [
-            {
-                id: 1,
-                title: "サンプル曲1",
-                artist: "サンプルアーティスト",
-                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                likes: 42,
-                category: "POP",
-                content: "これはサンプル説明です。"
-            },
-            {
-                id: 2,
-                title: "サンプル曲2",
-                artist: "テストアーティスト",
-                url: "https://www.youtube.com/watch?v=example2",
-                likes: 15,
-                category: "ROCK",
-                content: "もう一つのサンプル。"
-            }
+            {id: 1, title: "サンプル曲1", artist: "サンプルアーティスト", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", likes: 100, category: "POP"},
+            {id: 2, title: "サンプル曲2", artist: "テストアーティスト", url: "https://www.youtube.com/watch?v=9bZkp7q19f0", likes: 80, category: "ROCK"},
+            {id: 3, title: "サンプル曲3", artist: "テスト", url: "https://www.youtube.com/watch?v=kXYiU_JCYtU", likes: 60, category: "BALLAD"}
         ];
 
-        window.onload = () => {
-            loadList();
-        };
+        window.onload = () => loadList();
 
         async function loadList() {
             try {
@@ -69,16 +264,15 @@
         }
 
         function renderRanking(data) {
-            const rankingList = document.getElementById('rankingList');
+            const el = document.getElementById('rankingList');
             if (data.length === 0) {
-                rankingList.innerHTML = '<p class="empty-state">まだ音楽がありません。</p>';
+                el.innerHTML = '<p>まだ音楽がありません。</p>';
                 return;
             }
-
             const top5 = data.slice(0, 5);
-            rankingList.innerHTML = top5.map((m, index) => `
-                <div class="ranking-item" onclick="openDetail(${m.id})">
-                    <div class="rank-badge rank-${index + 1 <= 3 ? index + 1 : 'other'}">${index + 1}</div>
+            el.innerHTML = top5.map((m, i) => `
+                <div class="ranking-item">
+                    <div class="rank-badge rank-${i+1 <= 3 ? i+1 : 'other'}">${i+1}</div>
                     <div class="rank-thumb">
                         <img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/mqdefault.jpg" alt="${m.title}">
                     </div>
@@ -92,192 +286,36 @@
         }
 
         function renderGrid(data) {
-            const musicGrid = document.getElementById('musicGrid');
+            const el = document.getElementById('musicGrid');
             if (data.length === 0) {
-                musicGrid.innerHTML = '<p class="empty-state">まだ音楽がありません。</p>';
+                el.innerHTML = '<p>まだ音楽がありません。</p>';
                 return;
             }
-
-            musicGrid.innerHTML = data.map(m => `
-                <div class="music-card ${adminMode ? 'delete-mode' : ''}" onclick="${adminMode ? `deleteMusic(${m.id})` : `openDetail(${m.id})`}">
+            el.innerHTML = data.map(m => `
+                <div class="music-card">
                     <div class="card-thumb">
                         <img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/hqdefault.jpg" alt="${m.title}">
                     </div>
                     <div class="card-body">
                         <h3>${escapeHtml(m.title)}</h3>
                         <p>${escapeHtml(m.artist)}</p>
-                        <div class="card-stats">
-                            <div class="card-stat">❤️ ${m.likes}</div>
-                        </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        async function openDetail(id) {
-            selectedId = id;
-            try {
-                const res = await fetch(`/music/detail/${id}`);
-                if (res.ok) {
-                    const m = await res.json();
-                    document.getElementById('detailTitle').textContent = m.title;
-                    document.getElementById('detailArtist').textContent = m.artist;
-                    document.getElementById('detailLikeCount').textContent = m.likes;
-                    currentLikes = m.likes;
-                    isLiked = m.likers?.some(u => u.username === /*[[${#authentication?.name}]]*/ '') || false;
-
-                    const videoContainer = document.getElementById('videoContainer');
-                    if (m.url.includes('youtube.com') || m.url.includes('youtu.be')) {
-                        const videoId = extractVideoId(m.url);
-                        videoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
-                    } else {
-                        videoContainer.innerHTML = `<audio controls><source src="${m.url}" type="audio/mpeg">お使いのブラウザはaudioタグをサポートしていません。</audio>`;
-                    }
-
-                    const commentList = document.getElementById('commentList');
-                    if (m.answerList && m.answerList.length > 0) {
-                        commentList.innerHTML = m.answerList.map(ans => `
-                            <div class="comment-item">
-                                <strong>${escapeHtml(ans.author.username)}</strong>
-                                <div>${escapeHtml(ans.content)}</div>
-                            </div>
-                        `).join('');
-                    } else {
-                        commentList.innerHTML = '<p class="empty-state">まだフィードバックがありません。</p>';
-                    }
-                    updateLikeButton();
-                } else {
-                    alert('ロード失敗');
-                    return;
-                }
-            } catch (e) {
-                alert('エラー: ' + e.message);
-                return;
-            }
-            openModal('detail');
-        }
-
-        function updateLikeButton() {
-            const likeBtn = document.getElementById('likeBtn');
-            const likeIcon = document.getElementById('likeIcon');
-            const likeText = document.getElementById('likeText');
-            const likeCountEl = document.getElementById('likeCount');
-
-            if (isLiked) {
-                likeBtn.classList.add('liked');
-                likeIcon.textContent = '❤️';
-                likeText.textContent = 'いいね済み';
-            } else {
-                likeBtn.classList.remove('liked');
-                likeIcon.textContent = '🤍';
-                likeText.textContent = 'いいね';
-            }
-            likeCountEl.textContent = currentLikes;
-        }
-
-        async function toggleLike() {
-            if (!isAuthenticated) {
-                alert('ログインが必要です');
-                closeModal('detail');
-                openModal('login');
-                return;
-            }
-
-            try {
-                const res = await fetch(`/music/like/${selectedId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        [csrfHeader]: csrfToken
-                    }
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    currentLikes = data.likes;
-                    isLiked = data.isLiked;
-                    updateLikeButton();
-                    loadList();
-                } else {
-                    alert('いいねに失敗しました');
-                }
-            } catch (e) {
-                alert('エラー: ' + e.message);
-            }
-        }
-
-        function openModal(type) {
-            const modal = document.getElementById(type + 'Modal');
-            if (modal) modal.classList.add('active');
-        }
-
-        function closeModal(type) {
-            const modal = document.getElementById(type + 'Modal');
-            if (modal) modal.classList.remove('active');
-        }
-
         function handleFabClick() {
             if (!isAuthenticated) {
-                openModal('login');
+                alert('ログインが必要です。');
             } else {
-                openModal('share');
-                setShareType('youtube');
-            }
-        }
-
-        function setShareType(type) {
-            shareType = type;
-            document.getElementById('btnYoutube').classList.toggle('active', type === 'youtube');
-            document.getElementById('btnFile').classList.toggle('active', type === 'file');
-            document.getElementById('youtubeSection').style.display = type === 'youtube' ? 'block' : 'none';
-            document.getElementById('fileSection').style.display = type === 'file' ? 'block' : 'none';
-        }
-
-        async function shareMusic() {
-            const formData = new FormData();
-            formData.append('title', document.getElementById('inTitle').value);
-            formData.append('artist', document.getElementById('inArtist').value);
-            formData.append('description', document.getElementById('inDesc').value || '');
-
-            if (shareType === 'youtube') {
-                formData.append('url', document.getElementById('inUrl').value);
-            } else if (shareType === 'file') {
-                const fileInput = document.getElementById('audioFile');
-                if (fileInput.files[0]) {
-                    formData.append('audioFile', fileInput.files[0]);
-                }
-            }
-
-            formData.append('category', 'POP');
-
-            try {
-                const res = await fetch('/music/create', {
-                    method: 'POST',
-                    headers: { [csrfHeader]: csrfToken },
-                    body: formData
-                });
-
-                if (res.ok) {
-                    alert('音楽が正常に共有されました！');
-                    document.getElementById('inTitle').value = '';
-                    document.getElementById('inArtist').value = '';
-                    document.getElementById('inDesc').value = '';
-                    document.getElementById('inUrl').value = '';
-                    closeModal('share');
-                    loadList();
-                } else {
-                    alert('共有失敗');
-                }
-            } catch (e) {
-                alert('エラー: ' + e.message);
+                alert('共有機能は現在開発中です。');
             }
         }
 
         function extractVideoId(url) {
             if (!url) return 'dQw4w9WgXcQ';
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : 'dQw4w9WgXcQ';
+            const match = url.match(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*)/);
+            return match && match[1].length === 11 ? match[1] : 'dQw4w9WgXcQ';
         }
 
         function escapeHtml(text) {

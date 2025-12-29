@@ -1,7 +1,8 @@
-<head th:fragment="head">
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Cho - フィードバック広場</title>
     <meta name="_csrf" th:content="${_csrf?.token}"/>
     <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
     <style>
@@ -34,9 +35,219 @@
             min-height: 100vh;
         }
         
-        /* 나머지 모든 CSS 클래스 (.navbar, .container, .ranking-section, .music-grid, .music-card, .fab, .modal 등) */
-        /* 너가 이전에 준 DOCUMENT 전체 CSS 여기 다 복붙 (생략 없이) */
-        /* 예: .navbar { ... }부터 .empty-state { ... }까지 전부 */
-        /* 실제로 복붙하면 1000줄 넘음 - 너가 준 긴 CSS 전체 넣어 */
+        .navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .navbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .user-info span {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 48px 32px;
+        }
+        
+        .ranking-section {
+            margin-bottom: 48px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .ranking-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .ranking-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .ranking-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .rank-badge {
+            font-size: 28px;
+            font-weight: 900;
+            min-width: 50px;
+            text-align: center;
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, var(--gold), #FFA500); color: white; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4); }
+        .rank-2 { background: linear-gradient(135deg, var(--silver), #A0A0A0); color: white; box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4); }
+        .rank-3 { background: linear-gradient(135deg, var(--bronze), #B87333); color: white; box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4); }
+        .rank-other { background: var(--glass-bg); color: var(--text-secondary); }
+
+        .rank-thumb { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
+        .rank-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        .rank-info { flex: 1; }
+        .rank-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rank-artist { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+        .rank-likes { font-size: 24px; font-weight: 700; color: var(--primary); min-width: 60px; text-align: right; }
+
+        .music-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 32px;
+        }
+        
+        .music-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .music-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .card-thumb {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+        
+        .music-card:hover .card-thumb img {
+            transform: scale(1.1);
+        }
+        
+        .card-body {
+            padding: 24px;
+            background: var(--glass-bg);
+        }
+        
+        .card-body h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 700;
+        }
+        
+        .card-body p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);
+            z-index: 100;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .fab:hover {
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 12px 32px rgba(0, 122, 255, 0.5);
+        }
+
+        /* 모달 스타일은 modal.html에 넣을 거라 여기서 생략 */
     </style>
 </head>
