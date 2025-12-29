@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// ... (기존 import 유지)
+
 @Controller
 @RequestMapping("/music")
 @RequiredArgsConstructor
@@ -25,35 +27,24 @@ public class MusicController {
     private final MusicService musicService;
     private final UserService userService;
 
-    // 메인 페이지
     @GetMapping("/list")
     public String list(Model model) {
-        model.addAttribute("content", "music/list :: content");  // layout.html 사용 시
-        return "layout";  // 또는 "list" если layout 없음
+        model.addAttribute("content", "music/list :: content");
+        return "layout";
     }
 
-    // JS 데이터 API
     @GetMapping("/list-data")
     @ResponseBody
     public List<Music> listData() {
-        return musicService.getList();  // 기본 getList() 사용 (answerList fetch join 필요하면 Service 수정)
+        return musicService.getList();
     }
 
-    // 상세 API
     @GetMapping("/detail/{id}")
     @ResponseBody
     public Music detail(@PathVariable Integer id, Principal principal) {
-        Music music = musicService.getMusic(id);
-        if (principal != null) {
-            SiteUser user = userService.getUser(principal.getName());
-            // isLiked는 Music에 transient boolean으로 추가하거나 Service에서 계산
-            // 임시로 false
-            // music.setIsLiked(...);
-        }
-        return music;
+        return musicService.getMusic(id);  // isLiked 임시 생략
     }
 
-    // 음악 공유 (MusicCreateForm 없애고 파라미터 직접)
     @PostMapping("/create")
     @PreAuthorize("isAuthenticated()")
     public String create(@RequestParam String title,
@@ -64,7 +55,7 @@ public class MusicController {
                          @RequestParam(required = false) MultipartFile audioFile,
                          Principal principal) {
         SiteUser user = userService.getUser(principal.getName());
-        String finalUrl = url;
+        String finalUrl = url != null ? url : "";
 
         if (audioFile != null && !audioFile.isEmpty()) {
             String uploadDir = "C:/sbb_uploads/music/";
@@ -72,7 +63,7 @@ public class MusicController {
             String fileName = System.currentTimeMillis() + "_" + audioFile.getOriginalFilename();
             try {
                 audioFile.transferTo(new File(uploadDir + fileName));
-                finalUrl = "/uploads/" + fileName;  // properties 매핑 확인
+                finalUrl = "/uploads/" + fileName;
             } catch (IOException e) {
                 throw new RuntimeException("ファイルアップロード失敗");
             }
@@ -82,22 +73,20 @@ public class MusicController {
         return "redirect:/music/list";
     }
 
-    // 좋아요 (Music에 int likes = 0; 추가 가정, toggle은 간단 +1/-1)
     @PostMapping("/like/{id}")
     @PreAuthorize("isAuthenticated()")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> like(@PathVariable Integer id, Principal principal) {
         SiteUser user = userService.getUser(principal.getName());
-        boolean isLiked = musicService.toggleLike(id, user);  // Service에 구현 필요
+        musicService.toggleLike(id, user);  // +1만 함 (토글 원하면 likers Set 추가)
         int likes = musicService.getLikesCount(id);
 
         Map<String, Object> result = new HashMap<>();
         result.put("likes", likes);
-        result.put("isLiked", isLiked);
+        result.put("isLiked", true);
         return ResponseEntity.ok(result);
     }
 
-    // 삭제 (DELETE 대신 POST로 변경 추천, JS에서 POST 사용)
     @PostMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public String delete(@PathVariable Integer id) {
