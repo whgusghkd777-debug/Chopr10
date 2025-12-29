@@ -8,30 +8,44 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Controller
+@RequestMapping("/music")
 public class MusicController {
 
     private final MusicService musicService;
 
-    @GetMapping("/music/list")
+    @GetMapping("/list")
     public String list() {
         return "music/list";
     }
 
-    @GetMapping("/music/listJson")
-    @ResponseBody // [중요] 이 어노테이션이 있어야 JSON 데이터를 보냅니다.
+    @GetMapping("/listJson")
+    @ResponseBody
     public List<Music> listJson() {
         return musicService.getList();
     }
 
-    @GetMapping("/music/detail/{id}")
+    @GetMapping("/detail/{id}")
     public String detail(@PathVariable("id") Integer id, Model model) {
-        try {
-            Music music = musicService.getMusic(id);
-            model.addAttribute("music", music);
-            return "music/detail_fragment"; 
-        } catch (Exception e) {
-            // [실무 팁] 데이터가 없으면 리스트로 리다이렉트 시켜 500 에러 방지
-            return "redirect:/music/list";
+        Music music = musicService.getMusic(id);
+        
+        // [실무 핵심] 안정적인 유튜브 ID 추출 로직
+        String videoId = "dQw4w9WgXcQ"; // 기본값 (에러 방지)
+        String url = music.getUrl();
+
+        if (url != null && !url.isEmpty()) {
+            if (url.contains("v=")) {
+                videoId = url.split("v=")[1].split("&")[0];
+            } else if (url.contains("youtu.be/")) {
+                videoId = url.split("youtu.be/")[1].split("\\?")[0];
+            } else if (url.contains("embed/")) {
+                videoId = url.split("embed/")[1].split("\\?")[0];
+            }
         }
+        
+        // 템플릿에서 바로 사용할 수 있도록 임베드용 주소로 교체
+        music.setUrl("https://www.youtube.com/embed/" + videoId);
+        
+        model.addAttribute("music", music);
+        return "music/detail_fragment"; 
     }
 }
