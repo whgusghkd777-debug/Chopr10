@@ -1,91 +1,91 @@
-<div style="margin-top: 50px; border-top: 2px solid #f5f5f7; padding-top: 30px;">
-    <h3 style="font-weight: 700; margin-bottom: 20px;">💬 コメント (<span th:text="${#lists.size(music.answerList)}"></span>)</h3>
-    
-    <div sec:authorize="isAuthenticated()" style="margin-bottom: 30px;">
-        <textarea id="commentInput" style="width: 100%; height: 100px; padding: 15px; border-radius: 12px; border: 1px solid #ddd; resize: none; margin-bottom: 10px;" placeholder="コメントを残してください。"></textarea>
-        <button th:onclick="|submitComment(${music.id})|" style="float: right; background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 10px; cursor: pointer; font-weight: 600;">投稿</button>
-        <div style="clear: both;"></div>
-    </div>
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout(~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<section>
+    <div class="card" style="background: white; padding: 40px; border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-width: 900px; margin: 40px auto;">
+        <h1 th:text="${music.title}" style="font-weight: 800; font-size: 2.5rem; margin-bottom: 10px; color: #1D1D1F;"></h1>
+        <p style="color: #86868B; margin-bottom: 30px; font-size: 1.1rem;">アーティスト: <span th:text="${music.artist}"></span></p>
+        
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 20px; background: #000;">
+            <iframe th:src="${embedUrl}" 
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                    allowfullscreen></iframe>
+        </div>
 
-    <div sec:authorize="isAnonymous()" style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 12px; text-align: center;">
-        <p style="color: #86868B;">コメントを投稿するには<a href="/user/login" style="color: var(--primary); text-decoration: none; font-weight: 600;">ログイン</a>が必要です。</p>
-    </div>
-    
-    <div id="commentList">
-        <div th:each="answer : ${music.answerList}" style="padding: 20px; border-bottom: 1px solid #eee;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <strong th:text="${answer.author != null ? answer.author.username : '匿名'}" style="color: #1D1D1F;"></strong>
-                <span th:text="${#temporals.format(answer.createDate, 'yyyy-MM-dd HH:mm')}" style="color: #86868B; font-size: 13px;"></span>
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; display: flex; gap: 20px;">
+            <button class="btn" id="btnLike" th:onclick="|likeMusic(${music.id})|"
+                    style="background: #FFF0F0; color: #FF3B30; border: none; padding: 12px 24px; border-radius: 16px; font-weight: 600; cursor: pointer;">
+                ❤️ いいね <span id="likeCount" th:text="${music.likers.size()}"></span>
+            </button>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <h4 style="font-weight: 700; font-size: 1.2rem; margin-bottom: 15px;">楽曲説明</h4>
+            <div style="background: #F5F5F7; padding: 25px; border-radius: 18px;">
+                <p th:text="${music.content}" style="white-space: pre-wrap;"></p>
             </div>
-            <p th:text="${answer.content}" style="color: #424245; line-height: 1.5;"></p>
+        </div>
+
+        <div style="margin-top: 50px; border-top: 2px solid #f5f5f7; padding-top: 30px;">
+            <h3 style="font-weight: 700; margin-bottom: 20px;">💬 コメント (<span th:text="${music.answerList.size()}"></span>)</h3>
+            
+            <div sec:authorize="isAuthenticated()" style="margin-bottom: 30px;">
+                <textarea id="commentInput" style="width: 100%; height: 100px; padding: 15px; border-radius: 12px; border: 1px solid #ddd; resize: none; margin-bottom: 10px;" placeholder="コメントを残してください。"></textarea>
+                <button th:onclick="|submitComment(${music.id})|" style="float: right; background: #007AFF; color: white; border: none; padding: 10px 25px; border-radius: 10px; cursor: pointer; font-weight: 600;">投稿</button>
+                <div style="clear: both;"></div>
+            </div>
+            
+            <div id="commentList">
+                <div th:each="answer : ${music.answerList}" style="padding: 20px; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <strong th:text="${answer.author.username}" style="color: #1D1D1F;"></strong>
+                        <span th:text="${#temporals.format(answer.createDate, 'yyyy-MM-dd HH:mm')}" style="color: #86868B; font-size: 13px;"></span>
+                    </div>
+                    <p th:text="${answer.content}" style="color: #424245;"></p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<script th:inline="javascript">
-    // [댓글 등록 함수]
-    async function submitComment(id) {
-        const content = document.getElementById('commentInput').value;
-        if(!content.trim()) {
-            alert("内容を入力してください。");
-            return;
+    <script th:inline="javascript">
+        // [댓글 등록 스크립트]
+        async function submitComment(id) {
+            const content = document.getElementById('commentInput').value;
+            if(!content.trim()) return alert("内容を入力してください。");
+
+            const token = document.querySelector('meta[name="_csrf"]').content;
+            const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+            const formData = new URLSearchParams();
+            formData.append('content', content);
+
+            try {
+                const res = await fetch('/answer/create/' + id, {
+                    method: 'POST',
+                    headers: { [header]: token, 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                if (res.ok) location.reload();
+            } catch (e) { console.error(e); }
         }
 
-        // CSRF対策: metaタグから取得
-        const token = document.querySelector('meta[name="_csrf"]')?.content;
-        const header = document.querySelector('meta[name="_csrf_header"]')?.content;
-
-        if (!token || !header) {
-            console.error("CSRF token not found");
-            return;
+        // [좋아요 스크립트]
+        async function likeMusic(id) {
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            try {
+                const res = await fetch('/music/like/' + id, {
+                    method: 'POST',
+                    headers: { [header]: token }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('likeCount').innerText = data.likes;
+                } else if (res.status === 403) {
+                    alert("ログインが必要です。");
+                    location.href = '/user/login';
+                }
+            } catch (e) { console.error(e); }
         }
-
-        const formData = new URLSearchParams();
-        formData.append('content', content);
-
-        try {
-            const res = await fetch('/answer/create/' + id, {
-                method: 'POST',
-                headers: { 
-                    [header]: token,
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: formData
-            });
-
-            if (res.ok) {
-                // 成功時はリロードして最新のコメントを表示
-                location.reload();
-            } else if (res.status === 403) {
-                alert("ログインが必要です。");
-                location.href = '/user/login';
-            } else {
-                alert("エラーが発生しました。");
-            }
-        } catch (e) {
-            console.error("Fetch Error:", e);
-        }
-    }
-
-    // [いいね関数]
-    async function likeMusic(id) {
-        const token = document.querySelector('meta[name="_csrf"]')?.content;
-        const header = document.querySelector('meta[name="_csrf_header"]')?.content;
-
-        try {
-            const res = await fetch('/music/like/' + id, {
-                method: 'POST',
-                headers: { [header]: token }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('likeCount').innerText = data.likes;
-            } else if (res.status === 403) {
-                alert("ログインが必要です。");
-                location.href = '/user/login';
-            }
-        } catch (e) {
-            console.error("Error:", e);
-        }
-    }
-</script>
+    </script>
+</section>
+</html>

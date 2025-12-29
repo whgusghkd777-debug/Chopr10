@@ -3,21 +3,14 @@ package com.mysite.sbb.music;
 import com.mysite.sbb.user.SiteUser;
 import com.mysite.sbb.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.io.File;
-import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,19 +20,13 @@ public class MusicController {
 
     private final MusicService musicService;
     private final UserService userService;
-    private static final String UPLOAD_DIR = "C:/sbb_uploads/music/";
 
     @GetMapping("/music/list")
     public String list() {
         return "music/list";
     }
 
-    @GetMapping("/music/listJson")
-    @ResponseBody
-    public List<Music> listJson() {
-        return musicService.getList();
-    }
-
+    // [중요] 상세 페이지는 @ResponseBody를 절대 쓰지 않음
     @GetMapping("/music/detail/{id}")
     public String detail(@PathVariable("id") Integer id, Model model) {
         Music music = musicService.getMusic(id);
@@ -48,8 +35,14 @@ public class MusicController {
         return "music/detail_fragment"; 
     }
 
+    @GetMapping("/music/listJson")
+    @ResponseBody
+    public List<Music> listJson() {
+        return musicService.getList();
+    }
+
     private String convertToEmbedUrl(String url) {
-        if (url == null) return "";
+        if (url == null || url.isEmpty()) return "";
         String videoId = "";
         String regex = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*";
         Pattern compiledPattern = Pattern.compile(regex);
@@ -67,7 +60,6 @@ public class MusicController {
         musicService.like(music, user);
         Map<String, Object> res = new HashMap<>();
         res.put("likes", music.getLikers().size());
-        res.put("isLiked", music.getLikers().contains(user));
         return res;
     }
 }
