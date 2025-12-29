@@ -32,12 +32,10 @@ public class MusicController {
         return musicService.getList();
     }
 
-    // [修正] 重複を削除し、embedUrlの処理を含めた唯一のdetailメソッド
     @GetMapping("/music/detail/{id}")
     public String detail(@PathVariable("id") Integer id, Model model) {
         Music music = musicService.getMusic(id);
         model.addAttribute("music", music);
-        // YouTubeのURLを再生可能なembed形式に変換して渡す
         model.addAttribute("embedUrl", convertToEmbedUrl(music.getUrl()));
         return "music/detail_fragment"; 
     }
@@ -49,9 +47,9 @@ public class MusicController {
         Music music = musicService.getMusic(id);
         SiteUser user = userService.getUser(principal.getName());
         musicService.like(music, user);
+        
         Map<String, Object> res = new HashMap<>();
         res.put("likes", music.getLikers().size());
-        // [追加] クライアント側で状態を確認できるよう現在のユーザーが「いいね」したか返す
         res.put("isLiked", music.getLikers().contains(user));
         return res;
     }

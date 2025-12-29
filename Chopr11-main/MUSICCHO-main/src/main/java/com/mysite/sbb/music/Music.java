@@ -5,10 +5,10 @@ import com.mysite.sbb.user.SiteUser;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 
 @Getter
 @Setter
@@ -18,30 +18,23 @@ public class Music {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 200)
     private String title;
-
-    @Column(length = 100)
     private String artist;
-
-    @Column(columnDefinition = "TEXT")
-    private String content;  // 설명이나 description
-
-    private String url;  // YouTube나 파일 링크
-
+    private String content;
+    private String url;
     private String category;
-
     private LocalDateTime createDate;
-
-    @OneToMany(mappedBy = "music", cascade = CascadeType.REMOVE)
-    private List<Answer> answerList;
 
     @ManyToOne
     private SiteUser author;
 
-    // 새로 추가: 좋아요
+    // [중요] 좋아요 숫자 저장
     private Integer likes = 0;
 
+    // [중요] 좋아요 누른 유저 목록
     @ManyToMany
-    private Set<SiteUser> likers;
+    private Set<SiteUser> likers = new HashSet<>();
+
+    @OneToMany(mappedBy = "music", cascade = CascadeType.REMOVE)
+    private List<Answer> answerList;
 }
