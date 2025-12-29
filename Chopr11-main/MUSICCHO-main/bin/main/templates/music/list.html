@@ -3,51 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>音楽一覧</title>
-    <style>
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        a { color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-    </style>
 </head>
 <body>
     <h1>音楽一覧</h1>
-
     <a href="/music/create">新しい音楽を登録</a>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>タイトル</th>
-                <th>アーティスト</th>
-                <th>カテゴリ</th>
-                <th>いいね</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="music : ${musicList}">
-                <td th:text="${music.id}"></td>
-                <td th:text="${music.title}"></td>
-                <td th:text="${music.artist}"></td>
-                <td th:text="${music.category}"></td>
-                <td th:text="${music.likes}">0</td>
-                <td>
-                    <a th:href="@{/music/{id}(id=${music.id})}">詳細</a> |
-                    <a th:href="@{/music/{id}/edit(id=${music.id})}">編集</a> |
-                    <form th:action="@{/music/{id}/delete(id=${music.id})}" method="post" style="display:inline;">
-                        <button type="submit" onclick="return confirm('本当に削除しますか？')">削除</button>
-                    </form>
-                </td>
-            </tr>
-        </tbody>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>タイトル</th>
+            <th>アーティスト</th>
+            <th>いいね</th>
+        </tr>
+        <tr th:each="music : ${musicList}">
+            <td th:text="${music.id}"></td>
+            <td th:text="${music.title}"></td>
+            <td th:text="${music.artist}"></td>
+            <td th:text="${music.likes}"></td>
+        </tr>
     </table>
-
-    <div th:if="${musicList == null or #lists.isEmpty(musicList)}">
-        登録された音楽がありません。
-    </div>
+    <div th:if="${#lists.isEmpty(musicList)}">データなし</div>
 </body>
 </html>
