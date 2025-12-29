@@ -1,0 +1,19 @@
+<nav class="navbar" th:fragment="navbar">
+    <div class="navbar-content">
+        <div class="logo" th:onclick="|location.href='@{/music/list}'|">Music Cho</div>
+        <div class="nav-right">
+            <div sec:authorize="hasRole('ADMIN')" class="admin-controls">
+                <button id="adminBtn" class="btn-admin" onclick="toggleAdminMode()">⚙️ 管理者削除モード: OFF</button>
+            </div>
+            <div class="user-info">
+                <span sec:authorize="isAuthenticated()" th:text="${#authentication.name}" style="margin-right: 15px; font-weight: 600;"></span>
+                
+                <button sec:authorize="isAnonymous()" th:onclick="|location.href='@{/user/login}'|" class="btn-login">ログイン</button>
+                
+                <form sec:authorize="isAuthenticated()" th:action="@{/user/logout}" method="get" style="display: inline;">
+                    <button type="submit" class="btn-logout">ログアウト</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>音楽投稿</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; }
+        input, button { padding: 10px; margin: 5px; width: 300px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <div sec:authorize="isAuthenticated()">
+            <span sec:authentication="name"></span>さん ようこそ!
+            <a th:href="@{/logout}">ログアウト</a>
+            <span sec:authorize="hasRole('ADMIN')">
+                | <a href="/admin">管理者ページ</a>
+            </span>
+        </div>
+        <div sec:authorize="isAnonymous()">
+            <a th:href="@{/user/login}">ログイン</a> | <a th:href="@{/user/signup}">会員登録</a>
+        </div>
+    </header>
+
+    <h1>音楽を投稿する</h1>
+
+    
+    <form th:action="@{/music/upload}" method="post">
+        <label for="title">タイトル（曲名）:</label><br>
+        <input type="text" id="title" name="title" required placeholder="例: Back In Black"><br><br>
+
+        <label for="artist">アーティスト:</label><br>
+        <input type="text" id="artist" name="artist" required placeholder="例: AC/DC"><br><br>
+
+        <label for="url">YouTube URL:</label><br>
+        <input type="text" id="url" name="url" required placeholder="https://www.youtube.com/watch?v=..."><br><br>
+
+        <button type="submit">投稿する</button>
+    </form>
+
+    <br>
+    <a th:href="@{/music}">← 一覧に戻る</a>
+</body>
+</html>

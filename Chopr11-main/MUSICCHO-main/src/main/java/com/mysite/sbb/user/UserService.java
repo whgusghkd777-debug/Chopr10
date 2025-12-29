@@ -3,6 +3,7 @@ package com.mysite.sbb.user;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -15,14 +16,18 @@ public class UserService {
         SiteUser user = new SiteUser();
         user.setUsername(username);
         user.setEmail(email);
+        // PasswordEncoder를 사용하여 암호화
         user.setPassword(passwordEncoder.encode(password));
         this.userRepository.save(user);
         return user;
     }
 
     public SiteUser getUser(String username) {
-        // [중요] findByUsername으로 호출
-        return this.userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("ユーザーが見つかりません。"));
+        Optional<SiteUser> siteUser = this.userRepository.findByUsername(username);
+        if (siteUser.isPresent()) {
+            return siteUser.get();
+        } else {
+            throw new RuntimeException("siteuser not found");
+        }
     }
 }

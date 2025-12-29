@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Cho</title>
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #007AFF; --primary-hover: #0051D5; --secondary: #5856D6;
+            --bg-primary: #F5F5F7; --bg-secondary: #FFFFFF;
+            --text-primary: #1D1D1F; --text-secondary: #86868B;
+            --glass-bg: rgba(255, 255, 255, 0.7); --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08); --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        body { 
+            font-family: -apple-system, "Hiragino Sans", sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-primary); min-height: 100vh;
+        }
+        .navbar { background: var(--glass-bg); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--glass-border); }
+        .navbar-content { max-width: 1400px; margin: 0 auto; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 48px 32px; }
+        .ranking-section { background: var(--glass-bg); border-radius: 24px; padding: 32px; border: 1px solid var(--glass-border); margin-bottom: 48px; }
+        .ranking-item { display: flex; align-items: center; gap: 20px; padding: 20px; background: white; border-radius: 16px; margin-bottom: 10px; transition: 0.3s; cursor: pointer;}
+        .ranking-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .rank-thumb { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; }
+        .rank-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .music-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .music-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-sm); transition: 0.3s; cursor: pointer; }
+        .music-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        .card-thumb { height: 180px; width: 100%; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .card-body { padding: 20px; }
+        .fab { 
+            position: fixed; bottom: 40px; right: 40px; width: 64px; height: 64px; 
+            border-radius: 50%; background: var(--primary); color: white; border: none; 
+            font-size: 32px; cursor: pointer; box-shadow: var(--shadow-md); z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo" onclick="location.href='/music/list'">Music Cho</div>
+            <div class="nav-right">
+                <div class="user-info">
+                    <span sec:authorize="isAuthenticated()" th:text="${#authentication.name} + ' 様'"></span>
+                    <span sec:authorize="isAnonymous()">ゲスト</span>
+                    <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" style="color:var(--primary); border:none; background:none; cursor:pointer; margin-left:10px;">ログアウト</button>
+                    </form>
+                    <button sec:authorize="isAnonymous()" onclick="location.href='/user/login'" style="color:var(--primary); border:none; background:none; cursor:pointer;">ログイン</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="ranking-section">
+            <h2>🔥 人気ランキング</h2>
+            <div id="rankingList" class="ranking-list"></div>
+        </section>
+        <div id="musicGrid" class="music-grid"></div>
+    </div>
+
+    <button class="fab" id="fabButton">+</button>
+
+    <script th:inline="javascript">
+        let musicData = [];
+        const isAuthenticated = [[${#authorization.expression('isAuthenticated()')}]];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadList();
+            document.getElementById('fabButton').addEventListener('click', handleFabClick);
+        });
+
+        async function loadList() {
+            try {
+                const res = await fetch('/music/listJson');
+                if (res.ok) {
+                    musicData = await res.json();
+                    renderRanking(musicData);
+                    renderGrid(musicData);
+                }
+            } catch (e) {
+                console.error("Data load failed", e);
+            }
+        }
+
+        function renderRanking(data) {
+            const el = document.getElementById('rankingList');
+            el.innerHTML = data.slice(0, 3).map((m, i) => `
+                <div class="ranking-item" onclick="location.href='/music/detail/${m.id}'">
+                    <div style="font-weight:bold; font-size:20px;">${i+1}</div>
+                    <div class="rank-thumb"><img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/mqdefault.jpg"></div>
+                    <div>
+                        <div style="font-weight:bold;">${escapeHtml(m.title)}</div>
+                        <div style="color:gray; font-size:12px;">${escapeHtml(m.artist)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderGrid(data) {
+            const el = document.getElementById('musicGrid');
+            el.innerHTML = data.map(m => `
+                <div class="music-card" onclick="location.href='/music/detail/${m.id}'">
+                    <div class="card-thumb"><img src="https://img.youtube.com/vi/${extractVideoId(m.url)}/hqdefault.jpg"></div>
+                    <div class="card-body">
+                        <h3>${escapeHtml(m.title)}</h3>
+                        <p>${escapeHtml(m.artist)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleFabClick() {
+            if (!isAuthenticated) {
+                alert("ログインが必要です。");
+                location.href = '/user/login';
+            } else {
+                alert("投稿機能は準備中です。");
+            }
+        }
+
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url?.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : 'dQw4w9WgXcQ';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
