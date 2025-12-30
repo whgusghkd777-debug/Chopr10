@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
+<section layout:fragment="content">
+    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.08);">
+        <h2 style="font-weight: 800; margin-bottom: 30px; text-align: center;">楽曲を共有</h2>
+        
+        <form th:action="@{/music/create}" method="post" enctype="multipart/form-data">
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">タイトル</label>
+                <input type="text" name="title" required style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd; outline:none;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">アーティスト</label>
+                <input type="text" name="artist" required style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd; outline:none;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">YouTube URL</label>
+                <input type="text" name="url" placeholder="https://..." style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd; outline:none;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">音楽ファイル (MP3など)</label>
+                <input type="file" name="file" style="width:100%; padding:10px; border:1px dashed #007AFF; border-radius:12px;">
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600;">説明</label>
+                <textarea name="content" rows="4" style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd; outline:none;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <a th:href="@{/music/list}" style="flex: 1; text-align: center; padding: 16px; border-radius: 12px; background: #F2F2F7; color: #333; text-decoration: none; font-weight: 600;">キャンセル</a>
+                <button type="submit" style="flex: 2; padding: 16px; border-radius: 12px; background: #007AFF; color: white; border: none; font-weight: 700; cursor: pointer;">共有する</button>
+            </div>
+        </form>
+    </div>
+</section>
+</html>

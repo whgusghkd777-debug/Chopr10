@@ -1,0 +1,21 @@
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="logo" onclick="location.href='/'">🎵 CreatorShare</div>
+        
+        <div class="nav-right">
+            <div th:if="${#authorization.expression('isAnonymous()')}">
+                <button class="btn-outline" onclick="openModal('login')">ログイン </button>
+            </div>
+            
+            <div th:if="${#authorization.expression('isAuthenticated()')}">
+                <div class="user-info">
+                    <span th:text="${#authentication.name} + '様'">ユーザー</span>
+                    <form action="/user/logout" method="post" style="margin:0;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn-outline" style="padding: 6px 16px;">ログアウト</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>

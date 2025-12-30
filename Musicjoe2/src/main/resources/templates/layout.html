@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreatorShare</title>
+    <style>
+        :root { 
+            --primary: #007AFF; 
+            --bg: #F5F5F7; 
+            --text-primary: #1D1D1F;
+            --border: rgba(0, 0, 0, 0.1);
+        }
+        body { margin: 0; background: var(--bg); font-family: -apple-system, sans-serif; color: var(--text-primary); }
+        
+        nav { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(20px);
+            height: 64px; display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 5%; border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); text-decoration: none; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-primary); font-weight: 500; font-size: 15px; }
+        
+        .btn-primary { 
+            background: var(--primary); color: white !important; 
+            padding: 10px 22px; border-radius: 20px; font-weight: 700; 
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); 
+        }
+
+        /* 알맹이가 들어갈 컨테이너 */
+        .main-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a th:href="@{/music/list}" class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 8px; font-size: 18px;">C</span>
+            CreatorShare
+        </a>
+        
+        <div class="nav-links">
+            <a th:href="@{/music/list}">楽曲フィード</a>
+            
+            <a sec:authorize="isAnonymous()" th:href="@{/user/login}" class="btn-primary">ログイン</a>
+            
+            <div sec:authorize="isAuthenticated()" style="display: flex; align-items: center; gap: 15px;">
+                <span th:text="${#authentication.name} + ' 様'" style="font-size: 14px; color: #86868B;"></span>
+                <a th:href="@{/user/logout}" style="font-size: 14px; color: #86868B;">ログアウト</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <th:block layout:fragment="content"></th:block>
+    </div>
+
+</body>
+</html>
