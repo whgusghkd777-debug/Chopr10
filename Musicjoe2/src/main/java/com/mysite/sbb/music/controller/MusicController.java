@@ -19,12 +19,13 @@ import java.util.List;
 @Controller
 public class MusicController {
 
-    private final MusicService musicService;
+    // 반드시 이 이름(musicService)과 아래에서 쓰는 이름이 같아야 합니다!
+    private final MusicService musicService; 
     private final UserService userService;
 
     @GetMapping("/list")
     public String list(Model model) {
-        List<MusicListDto> musicList = this.musicService.getList();
+        List<MusicListDto> musicList = this.musicService.getList(); 
         model.addAttribute("musicList", musicList);
         return "music_list";
     }
@@ -42,12 +43,8 @@ public class MusicController {
                               @RequestParam String url, 
                               @RequestParam String content,
                               Principal principal) {
-        
         SiteUser author = this.userService.getUser(principal.getName());
-        
-        // ★ 서비스 호출 (5개의 인자 전달)
         this.musicService.create(title, artist, url, content, author);
-        
         return "redirect:/music/list";
     }
 
@@ -61,5 +58,22 @@ public class MusicController {
             model.addAttribute("embedUrl", "https://www.youtube.com/embed/" + videoId);
         }
         return "music_detail";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/vote/{id}")
+    public String musicVote(Principal principal, @PathVariable("id") Integer id) {
+        Music music = this.musicService.getMusic(id);
+        SiteUser siteUser = this.userService.getUser(principal.getName());
+        this.musicService.vote(music, siteUser);
+        return String.format("redirect:/music/detail/%d", id);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/delete/{id}")
+    public String musicDelete(@PathVariable("id") Integer id) {
+        Music music = this.musicService.getMusic(id);
+        this.musicService.delete(music);
+        return "redirect:/music/list";
     }
 }

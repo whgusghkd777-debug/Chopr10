@@ -18,13 +18,15 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-                .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll() // CSS 허용 추가
-                .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()  // JS 허용 추가
-                .requestMatchers(new AntPathRequestMatcher("/images/**")).permitAll() // 이미지 허용 추가
-                .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasAuthority("ROLE_ADMIN")
-                .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
-            
+           .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
+    .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
+    .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
+    .requestMatchers(new AntPathRequestMatcher("/images/**")).permitAll()
+    // .hasAuthority 대신 .hasRole 사용 (DB에 ROLE_ADMIN으로 저장되어 있어야 함)
+    .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
+    .requestMatchers(new AntPathRequestMatcher("/music/delete/**")).hasRole("ADMIN") // 삭제 권한 추가
+    .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
+                
             .csrf((csrf) -> csrf.disable())
             .headers((headers) -> headers
                 .frameOptions((frameOptions) -> frameOptions.sameOrigin()))
