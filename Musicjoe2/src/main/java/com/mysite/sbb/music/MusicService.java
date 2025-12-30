@@ -6,7 +6,7 @@ import com.mysite.sbb.music.dto.MusicRepository;
 import com.mysite.sbb.user.SiteUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // 추가하면 안전합니다.
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,13 +31,15 @@ public class MusicService {
                 .collect(Collectors.toList());
     }
 
-    public void create(String title, String artist, String url, String content, SiteUser author) {
+    // [수정] filePath 매개변수를 추가했습니다.
+    public void create(String title, String artist, String url, String content, SiteUser author, String filePath) {
         Music m = new Music();
         m.setTitle(title);
         m.setArtist(artist);
         m.setUrl(url);
         m.setContent(content);
         m.setAuthor(author);
+        m.setFilePath(filePath); // [핵심] 이 줄이 있어야 DB에 파일명이 저장됩니다!
         m.setCreateDate(LocalDateTime.now());
         
         if (url != null && url.contains("v=")) {
@@ -56,7 +58,7 @@ public class MusicService {
                 .orElseThrow(() -> new DataNotFoundException("music not found"));
     }
 
-    @Transactional // 추천 기능은 데이터가 변하므로 붙여주는 것이 좋습니다.
+    @Transactional
     public void vote(Music music, SiteUser siteUser) {
         music.getVoter().add(siteUser);
         this.musicRepository.save(music);

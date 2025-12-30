@@ -6,22 +6,29 @@ import com.mysite.sbb.music.dto.MusicListDto;
 import com.mysite.sbb.user.SiteUser;
 import com.mysite.sbb.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RequestMapping("/music")
 @RequiredArgsConstructor
 @Controller
 public class MusicController {
 
-    // 반드시 이 이름(musicService)과 아래에서 쓰는 이름이 같아야 합니다!
     private final MusicService musicService; 
     private final UserService userService;
+
+    @Value("${file.upload-path}")
+    private String uploadPath;
 
     @GetMapping("/list")
     public String list(Model model) {
@@ -40,11 +47,30 @@ public class MusicController {
     @PostMapping("/create")
     public String musicCreate(@RequestParam String title, 
                               @RequestParam String artist, 
-                              @RequestParam String url, 
+                              @RequestParam(required = false) String url, 
                               @RequestParam String content,
-                              Principal principal) {
+                              @RequestParam("file") MultipartFile file, // 파일 받기 추가
+                              Principal principal) throws IOException {
+        
         SiteUser author = this.userService.getUser(principal.getName());
-        this.musicService.create(title, artist, url, content, author);
+        String fileName = null;
+
+        // 파일 업로드 처리
+        if (file != null && !file.isEmpty()) {
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            
+            // 파일명 중복 방지를 위해 UUID 사용
+            fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            File saveFile = new File(uploadPath, fileName);
+            file.transferTo(saveFile);
+        }
+
+        // 서비스 호출 (수정된 create 메서드에 맞춰 fileName 전달)
+        this.musicService.create(title, artist, url, content, author, fileName);
+        
         return "redirect:/music/list";
     }
 
